@@ -1,7 +1,8 @@
 import { prisma } from '../config/database.js';
-import { hashPassword, comparePassword, generateToken } from '../utils/auth.js';
+import { hashPassword, comparePassword, generateToken, verifyToken } from '../utils/auth.js';
 import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client } from 'google-auth-library';
+import { jwtDecode } from 'jwt-decode';
 import { sendOTP } from '../utils/email.js';
 
 const CORS = {
@@ -55,8 +56,14 @@ export default async function handler(req, res) {
       }
 
       if (action === 'verify-otp') {
-        const { email, otp, password, name, phone, reg_no, participant_type } = req.body;
+        const { email, otp, password, name, phone, reg_no, participant_type, block, room } = req.body;
         if (!email || !otp || !password) return res.status(400).json({ error: 'Missing required fields' });
+        
+        if (participant_type === 'vit_student') {
+          if (!reg_no || reg_no.trim().length < 8) return res.status(400).json({ error: 'Registration number is required and must be valid.' });
+          if (!block || !room) return res.status(400).json({ error: 'Block and Room number are required for VIT students.' });
+          if (!/^(G\d*|\d+)$/i.test(room.trim())) return res.status(400).json({ error: 'Please enter a valid room number.' });
+        }
         
         const record = await prisma.oTP.findFirst({ where: { email, otp } });
         if (!record) return res.status(400).json({ error: 'Invalid or expired OTP' });
@@ -79,6 +86,8 @@ export default async function handler(req, res) {
             name: name || '',
             phone: phone || '',
             reg_no: participant_type === 'vit_student' ? (reg_no || '') : '',
+            block: participant_type === 'vit_student' ? (block || '') : '',
+            room: participant_type === 'vit_student' ? (room || '') : '',
             role: 'participant',
             participant_type: participant_type || 'external'
           }
@@ -108,15 +117,27 @@ export default async function handler(req, res) {
         if (!credential) return res.status(400).json({ error: 'Google credential is required' });
         if (!googleClient) return res.status(500).json({ error: 'Google Login is not configured on the server' });
         
+        const requiredAudience = process.env.VITE_GOOGLE_CLIENT_ID ? process.env.VITE_GOOGLE_CLIENT_ID.trim() : undefined;
+        console.log('--- GOOGLE LOGIN ATTEMPT ---');
+        console.log('Required Audience:', requiredAudience);
+        const decodedToken = jwtDecode(credential);
+        console.log('Token Audience (aud):', decodedToken.aud);
+
         const ticket = await googleClient.verifyIdToken({
           idToken: credential,
-          audience: process.env.VITE_GOOGLE_CLIENT_ID
+          audience: requiredAudience
         });
         const payload = ticket.getPayload();
-        const { email, name, sub } = payload;
+        const { email, sub } = payload;
+        let { name } = payload;
         
-        if (participant_type === 'vit_student' && !email.endsWith('@vitstudent.ac.in')) {
-          return res.status(403).json({ error: 'VIT Students must use their @vitstudent.ac.in email address.' });
+        // Remove trailing VIT registration number from name (e.g. "John Doe - 22BCE0001" or "John (22BCE0001)")
+        if (name) {
+          name = name.replace(/(?:\s|-|\()*[0-9]{2}[a-zA-Z]{3,4}[0-9]{4}(?:\))*$/i, '').trim();
+        }
+        
+        if (!email.toLowerCase().endsWith('@vitstudent.ac.in')) {
+          return res.status(403).json({ error: 'Only @vitstudent.ac.in email addresses are allowed for Google Login.' });
         }
         
         let p = await prisma.profile.findUnique({ where: { email } });
@@ -131,12 +152,46 @@ export default async function handler(req, res) {
               participant_type: participant_type || 'external'
             }
           });
+        } else if (p.name !== (name || '')) {
+          p = await prisma.profile.update({
+            where: { id: p.id },
+            data: { name: name || '' }
+          });
         }
         
         const token = generateToken({ id: p.id, role: p.role, email: p.email });
         return res.status(200).json({ token, user: p });
       }
       
+      return res.status(400).json({ error: 'Unknown action' });
+    }
+    
+    if (req.method === 'PUT') {
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+      const token = authHeader.split(' ')[1];
+      const decoded = verifyToken(token);
+      if (!decoded) return res.status(401).json({ error: 'Invalid or expired token' });
+      
+      const { action } = req.body || {};
+      if (action === 'complete-profile') {
+        const { reg_no, block, room } = req.body;
+        
+        if (!reg_no || reg_no.trim().length < 8) return res.status(400).json({ error: 'Registration number is required and must be valid.' });
+        if (!block || !room) return res.status(400).json({ error: 'Block and Room number are required.' });
+        if (!/^(G\d*|\d+)$/i.test(room.trim())) return res.status(400).json({ error: 'Please enter a valid room number.' });
+        
+        const updated = await prisma.profile.update({
+          where: { id: decoded.id },
+          data: {
+            reg_no: reg_no.trim(),
+            block,
+            room: room.trim().toUpperCase()
+          }
+        });
+        
+        return res.status(200).json({ message: 'Profile completed successfully', user: updated });
+      }
       return res.status(400).json({ error: 'Unknown action' });
     }
     

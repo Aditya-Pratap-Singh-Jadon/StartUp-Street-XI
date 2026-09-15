@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Background from "../components/Background";
+import { useAuth } from "../contexts/AuthContext";
 
 const timeline = [
     {
@@ -36,6 +37,7 @@ const timeline = [
 ];
 
 export default function Home() {
+    const { user } = useAuth();
     const [accessMode, setAccessMode] = useState("register");
 
     useEffect(() => {
@@ -120,19 +122,30 @@ export default function Home() {
                                 JOURNEY
                             </button>
 
-                            <Link
-                                to="/login"
-                                className="text-xs tracking-[0.15em] text-white/50 transition duration-300 hover:text-white"
-                            >
-                                LOGIN
-                            </Link>
+                            {user ? (
+                                <Link
+                                    to="/dashboard"
+                                    className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold tracking-[0.12em] text-black transition duration-300 hover:bg-cyan-100"
+                                >
+                                    DASHBOARD
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        to="/login"
+                                        className="text-xs tracking-[0.15em] text-white/50 transition duration-300 hover:text-white"
+                                    >
+                                        LOGIN
+                                    </Link>
 
-                            <Link
-                                to="/login?mode=register"
-                                className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold tracking-[0.12em] text-black transition duration-300 hover:bg-cyan-100"
-                            >
-                                REGISTER
-                            </Link>
+                                    <Link
+                                        to="/login?mode=register"
+                                        className="rounded-full bg-white px-5 py-2.5 text-xs font-semibold tracking-[0.12em] text-black transition duration-300 hover:bg-cyan-100"
+                                    >
+                                        REGISTER
+                                    </Link>
+                                </>
+                            )}
 
                         </nav>
 
@@ -140,21 +153,30 @@ export default function Home() {
                         {/* MOBILE NAV */}
 
                         <div className="flex items-center gap-2 md:hidden">
+                            {user ? (
+                                <Link
+                                    to="/dashboard"
+                                    className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-black"
+                                >
+                                    DASHBOARD
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link
+                                        to="/login"
+                                        className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-white/70 backdrop-blur-xl"
+                                    >
+                                        LOGIN
+                                    </Link>
 
-                            <Link
-                                to="/login"
-                                className="rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-white/70 backdrop-blur-xl"
-                            >
-                                LOGIN
-                            </Link>
-
-                            <Link
-                                to="/login?mode=register"
-                                className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-black"
-                            >
-                                JOIN
-                            </Link>
-
+                                    <Link
+                                        to="/login?mode=register"
+                                        className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-black"
+                                    >
+                                        JOIN
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                     </div>

@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       github_count: (subs || []).filter((s) => s.github_url).length,
       pending: (teams || []).length - submittedTeams.size,
       current_stage: current?.title || cfg.current_stage || 'Not set',
-      team_min: cfg.team_min || '2',
+      team_min: cfg.team_min || '3',
       team_max: cfg.team_max || '5',
       submissions_open: cfg.submissions_open || 'false',
     });

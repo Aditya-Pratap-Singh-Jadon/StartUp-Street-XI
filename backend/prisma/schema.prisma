@@ -15,6 +15,8 @@ model Profile {
   name             String?
   phone            String?
   reg_no           String?
+  block            String?
+  room             String?
   role             String   @default("participant")
   participant_type String   @default("vit_student")
   created_at       DateTime @default(now())

@@ -1,4 +1,4 @@
-export const EVENT_START_ISO = '2026-09-18T03:30:00Z'; // 18 Sep 2026, 09:00 IST
+export const EVENT_START_ISO = '2026-09-18T18:00:00+05:30'; // 18 Sep 2026, 18:00 IST
 
 export async function apiGet(path) {
   const res = await fetch(path);

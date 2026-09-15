@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       const { action } = req.body || {};
       const cfg = await getConfig();
       const teamMax = parseInt(cfg.team_max || '5', 10);
-      const teamMin = parseInt(cfg.team_min || '2', 10);
+      const teamMin = parseInt(cfg.team_min || '3', 10);
 
       if (action === 'create') {
         const { name, user_id } = req.body;
@@ -87,6 +87,7 @@ export default async function handler(req, res) {
           await prisma.teamMember.create({ data: { team_id: team.id, user_id } });
         } catch (mErr) {
           await prisma.team.delete({ where: { id: team.id } });
+          if (mErr.code === 'P2002') return res.status(400).json({ error: 'You are already in a team.' });
           throw mErr;
         }
         const members = await membersOf(team.id);
@@ -107,8 +108,14 @@ export default async function handler(req, res) {
         const members = await membersOf(team.id);
         if (members.length >= teamMax) return res.status(400).json({ error: `This team is full (maximum ${teamMax} members)` });
         
-        await prisma.teamMember.create({ data: { team_id: team.id, user_id } });
-        await notifyUsers([team.leader_id], 'New member joined', `A new member joined your team ${team.name} (${team.code}).`, 'team');
+        try {
+          await prisma.teamMember.create({ data: { team_id: team.id, user_id } });
+        } catch (err) {
+          if (err.code === 'P2002') return res.status(400).json({ error: 'You are already in a team.' });
+          throw err;
+        }
+        await notifyUsers(members.map(m => m.user_id), 'New member joined', `A new member joined your team ${team.name} (${team.code}).`, 'team');
+        await notifyUsers([user_id], 'Congratulations!', `You joined the team: "${team.name}"`, 'team');
         const updated = await membersOf(team.id);
         return res.status(200).json({ ...team, members: updated });
       }
@@ -128,9 +135,12 @@ export default async function handler(req, res) {
           return res.status(200).json({ ok: true, disbanded: true });
         }
         if (t.leader_id === user_id) {
-          const next = others.sort((a, b) => new Date(a.joined_at) - new Date(b.joined_at))[0];
-          await prisma.team.update({ where: { id: t.id }, data: { leader_id: next.user_id } });
-          await notifyUsers([next.user_id], 'You are now team leader', `You are now the leader of ${t.name} (${t.code}).`, 'team');
+          // Find the earliest joined remaining member
+          const next = others.sort((a, b) => new Date(a.joined_at).getTime() - new Date(b.joined_at).getTime())[0];
+          if (next && next.user_id) {
+            await prisma.team.update({ where: { id: t.id }, data: { leader_id: next.user_id } });
+            await notifyUsers([next.user_id], 'You are now team leader', `You are now the leader of ${t.name} (${t.code}).`, 'team');
+          }
         }
         await prisma.teamMember.delete({ where: { user_id } });
         return res.status(200).json({ ok: true });

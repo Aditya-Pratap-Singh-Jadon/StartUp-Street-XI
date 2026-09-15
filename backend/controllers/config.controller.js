@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       for (const [k, v] of Object.entries(values)) {
         if (!allowedKeys.includes(k)) continue;
         let val = String(v ?? '');
-        if (k === 'team_min') val = String(Math.max(1, Math.min(10, parseInt(v, 10) || 2)));
+        if (k === 'team_min') val = String(Math.max(1, Math.min(10, parseInt(v, 10) || 3)));
         if (k === 'team_max') val = String(Math.max(1, Math.min(10, parseInt(v, 10) || 5)));
         if (['allow_leave', 'submissions_open', 'allow_resubmission', 'registration_open'].includes(k)) val = v === true || v === 'true' ? 'true' : 'false';
         

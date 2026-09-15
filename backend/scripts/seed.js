@@ -85,7 +85,7 @@ async function seed() {
     // Event Config
     await prisma.eventConfig.createMany({
       data: [
-        { key: 'team_min', value: '2' },
+        { key: 'team_min', value: '3' },
         { key: 'team_max', value: '5' },
         { key: 'allow_leave', value: 'true' },
         { key: 'submissions_open', value: 'true' },
