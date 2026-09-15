@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { inputCls, labelCls, FieldError } from '../components/ui';
+import Background from '../components/Background';
 
 export default function Login() {
   const [params] = useSearchParams();
@@ -93,135 +94,138 @@ export default function Login() {
   };
 
   return (
-    <div className="grid min-h-screen bg-paper lg:grid-cols-2">
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-ink p-10 text-paper lg:flex">
-        <Link to="/" className="flex items-baseline gap-2.5">
-          <span className="bg-paper px-2 py-1 font-display text-sm font-bold text-ink">SS—XI</span>
-          <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-paper/60">Startup Street</span>
-        </Link>
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-clay-soft">The Shark Tank of VIT</p>
-          <p className="font-display mt-4 text-5xl leading-[1.02] font-medium xl:text-6xl">
-            One idea.<br />One venture.<br /><span className="text-beige italic">24 hours.</span>
-          </p>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-paper/60">
-            Register to form your team, receive your Team Code, track the live schedule and submit your final pitch.
+    <div className="relative min-h-screen isolate overflow-hidden bg-black text-white">
+      <Background />
+      <div className="relative z-10 grid min-h-screen lg:grid-cols-2 bg-black/40 backdrop-blur-sm">
+        <div className="relative hidden flex-col justify-between border-r border-white/10 p-10 lg:flex">
+          <Link to="/" className="flex items-baseline gap-2.5">
+            <span className="bg-white px-2 py-1 font-display text-sm font-bold text-black">SS—XI</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/60">Startup Street</span>
+          </Link>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-200">The Shark Tank of VIT</p>
+            <p className="font-display mt-4 text-5xl leading-[1.02] font-medium xl:text-6xl">
+              One idea.<br />One venture.<br /><span className="text-cyan-300 italic">24 hours.</span>
+            </p>
+            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/60">
+              Register to form your team, receive your Team Code, track the live schedule and submit your final pitch.
+            </p>
+          </div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-white/40">
+            CSED · VIT Vellore · graVITas 2026
           </p>
         </div>
-        <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-paper/40">
-          CSED · VIT Vellore · graVITas 2026
-        </p>
-      </div>
-      <div className="flex items-center justify-center px-4 py-16 sm:px-10">
-        <div className="w-full max-w-md">
-          <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-ink/55 hover:text-wine">
-            <ArrowLeft size={14} /> Back to site
-          </Link>
-          <h1 className="font-display mt-6 text-4xl font-medium tracking-tight sm:text-5xl">
-            {mode === 'register' ? 'Join the street.' : 'Welcome back.'}
-          </h1>
-          <p className="mt-2 text-sm text-ink/60">
-            {mode === 'register' ? 'Create your participant account to form or join a team.' : 'Sign in to access your team dashboard.'}
-          </p>
-          {!otpMode && (
-            <div className="mt-6 grid grid-cols-2 border border-ink/15 p-1 text-center text-[12px] font-bold uppercase tracking-[0.16em]">
-              {(['login', 'register']).map((m) => (
-                <button
-                  key={m}
-                  onClick={() => { setMode(m); setErr(null); setOtpMode(false); }}
-                  className={`py-2.5 transition ${mode === m ? 'bg-ink text-paper' : 'text-ink/55 hover:text-ink'}`}
-                >
-                  {m === 'login' ? 'Login' : 'Register'}
-                </button>
-              ))}
-            </div>
-          )}
-          <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
-            {otpMode ? (
-              <div className="space-y-4">
-                <p className="text-sm font-medium text-ink">We sent a 6-digit verification code to <span className="font-bold">{email}</span>. Please enter it below.</p>
-                <div>
-                  <label htmlFor="otp" className={labelCls}>Verification Code (OTP)</label>
-                  <input id="otp" type="text" maxLength={6} className={`${inputCls} text-center tracking-[0.5em] font-bold text-xl`} placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} autoComplete="one-time-code" />
-                </div>
+        <div className="flex items-center justify-center px-4 py-16 sm:px-10">
+          <div className="w-full max-w-md border border-white/10 bg-white/5 p-8 backdrop-blur-md">
+            <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/55 hover:text-cyan-300">
+              <ArrowLeft size={14} /> Back to site
+            </Link>
+            <h1 className="font-display mt-6 text-4xl font-medium tracking-tight sm:text-5xl">
+              {mode === 'register' ? 'Join the street.' : 'Welcome back.'}
+            </h1>
+            <p className="mt-2 text-sm text-white/60">
+              {mode === 'register' ? 'Create your participant account to form or join a team.' : 'Sign in to access your team dashboard.'}
+            </p>
+            {!otpMode && (
+              <div className="mt-6 grid grid-cols-2 border border-white/15 p-1 text-center text-[12px] font-bold uppercase tracking-[0.16em]">
+                {(['login', 'register']).map((m) => (
+                  <button
+                    key={m}
+                    onClick={() => { setMode(m); setErr(null); setOtpMode(false); }}
+                    className={`py-2.5 transition ${mode === m ? 'bg-white text-black' : 'text-white/55 hover:text-white'}`}
+                  >
+                    {m === 'login' ? 'Login' : 'Register'}
+                  </button>
+                ))}
               </div>
-            ) : (
-              <>
-                {mode === 'register' && (
-                  <div className="grid grid-cols-2 gap-2 p-1 border border-ink/15 bg-paper mb-4">
-                    <button
-                      type="button"
-                      onClick={() => setParticipantType('vit_student')}
-                      className={`py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${participantType === 'vit_student' ? 'bg-wine text-paper' : 'text-ink/60 hover:text-ink'}`}
-                    >
-                      VIT Student
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setParticipantType('external')}
-                      className={`py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${participantType === 'external' ? 'bg-wine text-paper' : 'text-ink/60 hover:text-ink'}`}
-                    >
-                      External
-                    </button>
-                  </div>
-                )}
-                {mode === 'register' && (
+            )}
+            <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
+              {otpMode ? (
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-white/90">We sent a 6-digit verification code to <span className="font-bold text-white">{email}</span>. Please enter it below.</p>
                   <div>
-                    <label htmlFor="name" className={labelCls}>Full name</label>
-                    <input id="name" className={inputCls} placeholder="Aarav Sharma" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+                    <label htmlFor="otp" className={labelCls}>Verification Code (OTP)</label>
+                    <input id="otp" type="text" maxLength={6} className={`${inputCls} text-center tracking-[0.5em] font-bold text-xl`} placeholder="123456" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))} autoComplete="one-time-code" />
                   </div>
-                )}
-                {mode === 'register' && participantType === 'vit_student' && (
-                  <div>
-                    <label htmlFor="regNo" className={labelCls}>Registration Number</label>
-                    <input id="regNo" className={inputCls} placeholder="22BCE0001" value={regNo} onChange={(e) => setRegNo(e.target.value.toUpperCase())} />
-                  </div>
-                )}
-                <div>
-                  <label htmlFor="email" className={labelCls}>Email</label>
-                  <input id="email" type="email" className={inputCls} placeholder={mode === 'register' && participantType === 'vit_student' ? "you@vitstudent.ac.in" : "you@example.com"} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
                 </div>
-                <div>
-                  <label htmlFor="password" className={labelCls}>Password</label>
-                  <input id="password" type="password" className={inputCls} placeholder="Minimum 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} />
+              ) : (
+                <>
+                  {mode === 'register' && (
+                    <div className="grid grid-cols-2 gap-2 p-1 border border-white/15 bg-white/5 mb-4">
+                      <button
+                        type="button"
+                        onClick={() => setParticipantType('vit_student')}
+                        className={`py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${participantType === 'vit_student' ? 'bg-cyan-900/50 border border-cyan-400/30 text-white' : 'text-white/60 hover:text-white'}`}
+                      >
+                        VIT Student
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setParticipantType('external')}
+                        className={`py-2 text-xs font-bold uppercase tracking-[0.1em] transition ${participantType === 'external' ? 'bg-cyan-900/50 border border-cyan-400/30 text-white' : 'text-white/60 hover:text-white'}`}
+                      >
+                        External
+                      </button>
+                    </div>
+                  )}
+                  {mode === 'register' && (
+                    <div>
+                      <label htmlFor="name" className={labelCls}>Full name</label>
+                      <input id="name" className={inputCls} placeholder="Aarav Sharma" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+                    </div>
+                  )}
+                  {mode === 'register' && participantType === 'vit_student' && (
+                    <div>
+                      <label htmlFor="regNo" className={labelCls}>Registration Number</label>
+                      <input id="regNo" className={inputCls} placeholder="22BCE0001" value={regNo} onChange={(e) => setRegNo(e.target.value.toUpperCase())} />
+                    </div>
+                  )}
+                  <div>
+                    <label htmlFor="email" className={labelCls}>Email</label>
+                    <input id="email" type="email" className={inputCls} placeholder={mode === 'register' && participantType === 'vit_student' ? "you@vitstudent.ac.in" : "you@example.com"} value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                  </div>
+                  <div>
+                    <label htmlFor="password" className={labelCls}>Password</label>
+                    <input id="password" type="password" className={inputCls} placeholder="Minimum 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} />
+                  </div>
+                </>
+              )}
+              
+              <FieldError message={err} />
+              <button
+                type="submit"
+                disabled={busy}
+                className="inline-flex w-full items-center justify-center gap-2 bg-white px-6 py-3.5 text-sm font-semibold tracking-wide text-black transition hover:bg-cyan-100 disabled:opacity-60"
+              >
+                {busy && <Loader2 size={16} className="animate-spin" />}
+                {otpMode ? 'Verify & Create Account' : mode === 'register' ? 'Create account' : 'Sign in'}
+              </button>
+            </form>
+            
+            {!otpMode && (
+              <>
+                <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/40">
+                  <span className="h-px flex-1 bg-white/10" /> or <span className="h-px flex-1 bg-white/10" />
+                </div>
+                
+                <div className="flex justify-center w-full [&>div]:invert-[0.9] [&>div]:hue-rotate-[180deg]">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={() => setErr('Google Login Failed')}
+                    useOneTap
+                    theme="outline"
+                    size="large"
+                    width="100%"
+                    text="continue_with"
+                  />
                 </div>
               </>
             )}
-            
-            <FieldError message={err} />
-            <button
-              type="submit"
-              disabled={busy}
-              className="inline-flex w-full items-center justify-center gap-2 bg-wine px-6 py-3.5 text-sm font-semibold tracking-wide text-paper transition hover:bg-wine-deep disabled:opacity-60"
-            >
-              {busy && <Loader2 size={16} className="animate-spin" />}
-              {otpMode ? 'Verify & Create Account' : mode === 'register' ? 'Create account' : 'Sign in'}
-            </button>
-          </form>
-          
-          {!otpMode && (
-            <>
-              <div className="my-6 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink/40">
-                <span className="h-px flex-1 bg-ink/12" /> or <span className="h-px flex-1 bg-ink/12" />
-              </div>
-              
-              <div className="flex justify-center w-full">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={() => setErr('Google Login Failed')}
-                  useOneTap
-                  theme="outline"
-                  size="large"
-                  width="100%"
-                  text="continue_with"
-                />
-              </div>
-            </>
-          )}
-
-          <p className="mt-8 text-center text-[11px] leading-relaxed tracking-wide text-ink/40 uppercase">
-            Startup Street XI · CSED, VIT Vellore · graVITas 2026
-          </p>
+  
+            <p className="mt-8 text-center text-[11px] leading-relaxed tracking-wide text-white/40 uppercase">
+              Startup Street XI · CSED, VIT Vellore · graVITas 2026
+            </p>
+          </div>
         </div>
       </div>
     </div>
