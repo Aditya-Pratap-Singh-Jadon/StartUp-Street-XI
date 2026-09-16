@@ -5,34 +5,112 @@ import { useAuth } from "../contexts/AuthContext";
 
 const timeline = [
     {
-        number: "06",
-        title: "THE PITCH",
-        text: "24 hours are over. Now make them believe.",
+        id: 1,
+        number: "4 P.M.",
+        title: "FINAL RESULT ANNOUNCEMENT",
+        text: "The final results are announced and the journey concludes with impact.",
     },
     {
-        number: "05",
-        title: "REFINEMENT",
-        text: "Break it. Fix it. Build it better.",
+        id: 2,
+        number: "2:30 P.M.",
+        title: "REVIEW BY SPEAKER",
+        text: "Final expert review to challenge assumptions and improve the final pitch.",
     },
     {
-        number: "04",
-        title: "MENTORSHIP",
-        text: "You don't build alone.",
+        id: 3,
+        number: "1:15 P.M. - 2:30 P.M.",
+        title: "LUNCH & BUFFER TIME",
+        text: "A buffer window to recharge, recover, and absorb the latest feedback.",
     },
     {
-        number: "03",
-        title: "STRATEGY",
-        text: "Turn the idea into a business that makes sense.",
+        id: 4,
+        number: "1 P.M.",
+        title: "REVIEW 2 RESULT ANNOUNCEMENT",
+        text: "The first result reveal sets the momentum for the final stretch.",
     },
     {
-        number: "02",
-        title: "VALIDATION",
-        text: "Find the signal. Prove someone needs it.",
+        id: 5,
+        number: "11:30 A.M.",
+        title: "SPEAKER SESSION",
+        text: "Insights from leaders and mentors to refine strategy and execution.",
     },
     {
-        number: "01",
+        id: 6,
+        number: "10:30 A.M.",
+        title: "REVIEW 2",
+        text: "A second checkpoint with stronger feedback and sharper validation.",
+    },
+    {
+        id: 7,
+        number: "9:30 A.M.",
+        title: "IDEATION TIME",
+        text: "Focused team work on final product, message, and pitch direction.",
+    },
+    {
+        id: 8,
+        number: "8 A.M.",
+        title: "R&R",
+        text: "Recovery time to stay fresh and focused for the next sprint.",
+    },
+    {
+        id: 9,
+        number: "6 A.M.",
+        title: "BREAK",
+        text: "A pause to reset, breathe, and regroup before the final push.",
+    },
+    {
+        id: 10,
+        number: "4:15 A.M.",
+        title: "SEED PPT",
+        text: "Present the early vision, traction, and the seed of the startup story.",
+    },
+    {
+        id: 11,
+        number: "4 A.M.",
+        title: "CRISIS DROP",
+        text: "A challenge moment that pushes teams to adapt and improve under pressure.",
+    },
+    {
+        id: 12,
+        number: "2:30 A.M.",
+        title: "REVIEW 1",
+        text: "Early feedback and refinement before the next phase begins.",
+    },
+    {
+        id: 13,
+        number: "1:30 A.M. - 2:30 A.M.",
         title: "IDEATION",
-        text: "Ask the question nobody else is asking.",
+        text: "A focused round of iteration to sharpen the concept and value proposition.",
+    },
+    {
+        id: 14,
+        number: "12:30 A.M",
+        title: "BMC PPT",
+        text: "Present the business model canvas and frame the venture clearly.",
+    },
+    {
+        id: 15,
+        number: "11 P.M. - 12:30 A.M.",
+        title: "IDEATION",
+        text: "Teams shape the problem, explore the space, and define the core idea.",
+    },
+    {
+        id: 16,
+        number: "9 P.M. - 11 P.M.",
+        title: "WORKSHOP",
+        text: "Hands-on learning, guided sessions, and practical problem solving.",
+    },
+    {
+        id: 17,
+        number: "7:45 P.M. - 9 P.M.",
+        title: "DINNER",
+        text: "A break to recharge, reset, and connect with the team.",
+    },
+    {
+        id: 18,
+        number: "6 P.M.",
+        title: "OPENING CEREMONY",
+        text: "Startup Street XI officially begins and the city opens for building.",
     },
 ];
 
@@ -113,7 +191,7 @@ export default function Home() {
                                 onClick={(e) =>
                                     handleAnchorClick(
                                         e,
-                                        "journey"
+                                        "journey-heading"
                                     )
                                 }
                                 className="text-xs tracking-[0.15em] text-white/50 transition duration-300 hover:text-white"
@@ -403,42 +481,17 @@ export default function Home() {
 
                     <div className="mx-auto max-w-7xl px-6 py-32 lg:px-10">
 
-                        <div className="mb-28 flex flex-col justify-between gap-8 md:flex-row md:items-end">
-
-                            <div>
-
-                                <h2 className="text-6xl font-medium leading-[0.85] tracking-[-0.06em] md:text-8xl">
-                                    BUILD
-                                    <br />
-
-                                    <span className="text-white/30">
-                                        UPWARD.
-                                    </span>
-                                </h2>
-
-                            </div>
-
-                            <p className="max-w-sm text-sm leading-6 text-white/35">
-                                Six stages.
-                                <br />
-                                One night.
-                                <br />
-                                One venture taking shape.
-                            </p>
-
-                        </div>
-
 
                         <div className="relative">
 
                             <div className="absolute bottom-0 left-5 top-0 w-px bg-white/10 md:left-1/2 md:-translate-x-1/2" />
 
-                            <div className="space-y-24">
+                            <div className="space-y-2">
 
                                 {timeline.map((item, index) => (
 
                                     <div
-                                        key={item.number}
+                                        key={item.id}
                                         className="relative grid min-h-45 items-center md:grid-cols-2"
                                     >
 
@@ -449,10 +502,12 @@ export default function Home() {
                                                 }`}
                                         >
 
-                                            <h3 className="mt-3 text-4xl font-medium tracking-tighter md:text-6xl">
+                                            <h3 className="mt-3 text-2xl font-medium tracking-tighter md:text-6xl">
                                                 {item.title}
                                             </h3>
-
+                                            <p className="mt-5 max-w-sm text-sm leading-6 text-cyan-200/70 md:ml-auto">
+                                                {item.number}
+                                            </p>
                                             <p className="mt-5 max-w-sm text-sm leading-6 text-white/35 md:ml-auto">
                                                 {item.text}
                                             </p>
@@ -473,6 +528,24 @@ export default function Home() {
                             </div>
 
                         </div>
+
+                        <div id="journey-heading" className="mt-16 flex min-h-[35vh] items-end justify-start pb-4 md:pb-8">
+
+                            <div>
+
+                                <h2 className="text-6xl font-medium leading-[0.85] tracking-[-0.06em] md:text-8xl">
+                                    BUILD
+                                    <br />
+
+                                    <span className="text-white/30">
+                                        UPWARD.
+                                    </span>
+                                </h2>
+
+                            </div>
+
+                        </div>
+
                     </div>
                 </section>
 
@@ -523,7 +596,7 @@ export default function Home() {
 
                             <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl shadow-[0_0_40px_rgba(34,211,238,0.06)] md:p-10">
                                 <h3 className="text-3xl font-medium tracking-[-0.05em] md:text-4xl text-cyan-200/70">
-                                    CENTRE FOR STUDENT ENTREPRENEURSHIP DEVELOPMENT
+                                    CENTRE FOR SOCIAL ENTREPRENEURSHIP DEVELOPMENT
                                 </h3>
                                 <p className="mt-6 max-w-2xl text-base leading-7 text-white/65 md:text-lg">
                                     CSED is the student-driven ecosystem that nurtures entrepreneurship through mentorship, innovation, and action. It gives emerging founders the support, exposure, and confidence to turn curiosity into momentum.
