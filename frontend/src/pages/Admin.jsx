@@ -110,6 +110,9 @@ export default function Admin() {
   const [teamQ, setTeamQ] = useState("");
   const [subQ, setSubQ] = useState("");
   const [subFilter, setSubFilter] = useState("all");
+  const [submissionWindow, setSubmissionWindow] = useState({ isOpen: false });
+  const [windowBusy, setWindowBusy] = useState(false);
+  const [selectedSubmissionTeam, setSelectedSubmissionTeam] = useState(null);
 
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
@@ -146,6 +149,7 @@ export default function Admin() {
         j,
         f,
         c,
+        sw,
         adm,
       ] = await Promise.all([
         apiGet(`/api/stats?admin_id=${user.id}`),
@@ -157,6 +161,7 @@ export default function Admin() {
         apiGet("/api/judges?all=1"),
         apiGet("/api/faqs?all=1"),
         apiGet("/api/config"),
+        apiGet("/api/submissions/state"),
         user?.role === "superadmin"
           ? apiGet(`/api/admins?admin_id=${user.id}`)
           : Promise.resolve([]),
@@ -171,6 +176,7 @@ export default function Admin() {
       setJudges(j);
       setFaqs(f);
       setCfg(c);
+      setSubmissionWindow(sw || { currentRound: 0, isOpen: true });
       setAdminsList(adm);
     } catch (e) {
       fail(e);
@@ -586,13 +592,13 @@ export default function Admin() {
   });
 
   const filteredSubs = teams
-    .map((t) => ({
-      team: t,
-      sub:
-        subs.find(
-          (s) => s.team_id === t.id
-        ) || null,
-    }))
+    .flatMap((t) => {
+      const teamSubs = subs.filter((s) => s.team_id === t.id);
+      if (teamSubs.length === 0) {
+        return [{ team: t, sub: null }];
+      }
+      return teamSubs.map((s) => ({ team: t, sub: s }));
+    })
     .filter(({ team: t, sub }) => {
       const q = subQ.trim().toLowerCase();
 
@@ -1225,7 +1231,7 @@ export default function Admin() {
                                   : "s"}
                               </span>
 
-                              {t.submission ? (
+                              {t.submissions?.length > 0 ? (
                                 <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.06] px-2 py-1 text-[7px] font-black uppercase tracking-[0.14em] text-emerald-200">
                                   Submitted
                                 </span>
@@ -1292,58 +1298,51 @@ export default function Admin() {
                                   Submission
                                 </p>
 
-                                {t.submission ? (
-                                  <div className="mt-3">
-                                    <div className={`${soft} rounded-lg p-4`}>
-                                      <div className="flex items-start gap-3">
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-300/10 text-violet-200">
-                                          <FileText size={13} />
-                                        </div>
+                                <div className="mt-3 space-y-4">
+                                  <div>
+                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25">
+                                      Round 1 Submission
+                                    </p>
 
-                                        <div className="min-w-0">
-                                          <p className="truncate text-[10px] font-semibold text-white/75">
-                                            {
-                                              t
-                                                .submission
-                                                .file_name
-                                            }
-                                          </p>
-
-                                          <p className="mt-1 text-[8px] text-white/25">
-                                            {fmtDate(
-                                              t
-                                                .submission
-                                                .created_at
-                                            )}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      {t.submission
-                                        .github_url && (
-                                          <a
-                                            href={
-                                              t.submission
-                                                .github_url
-                                            }
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="mt-3 inline-flex items-center gap-1.5 text-[8px] font-black uppercase tracking-wider text-cyan-200/70 hover:text-cyan-100"
+                                    <div className="mt-2">
+                                      {t.submissions?.find(s => s.round === 1) ? (
+                                        <div className="flex items-center justify-between">
+                                          <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">SUBMITTED ✓</p>
+                                          <button
+                                            onClick={() => setSelectedSubmissionTeam({ team: t, submission: t.submissions.find(s => s.round === 1) })}
+                                            className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 transition border border-white/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-cyan-300 rounded-lg"
                                           >
-                                            <Github size={11} />
-                                            Open GitHub
-                                            <ExternalLink
-                                              size={9}
-                                            />
-                                          </a>
-                                        )}
+                                            View
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <p className="text-[10px] uppercase tracking-wider text-white/30 mt-1">NOT SUBMITTED</p>
+                                      )}
                                     </div>
                                   </div>
-                                ) : (
-                                  <p className="mt-3 text-[10px] text-white/25">
-                                    No submission yet.
-                                  </p>
-                                )}
+
+                                  <div className="border-t border-white/[0.07] pt-4">
+                                    <p className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25">
+                                      Round 2 Submission
+                                    </p>
+
+                                    <div className="mt-2">
+                                      {t.submissions?.find(s => s.round === 2) ? (
+                                        <div className="flex items-center justify-between">
+                                          <p className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">SUBMITTED ✓</p>
+                                          <button
+                                            onClick={() => setSelectedSubmissionTeam({ team: t, submission: t.submissions.find(s => s.round === 2) })}
+                                            className="inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 transition border border-white/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-cyan-300 rounded-lg"
+                                          >
+                                            View
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <p className="text-[10px] uppercase tracking-wider text-white/30 mt-1">NOT SUBMITTED</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
 
                                 <div className="mt-5 border-t border-white/[0.07] pt-4">
                                   <button
@@ -1461,6 +1460,45 @@ export default function Admin() {
                         </div>
                       </div>
 
+                      {user?.role === "superadmin" && (
+                        <div className="mt-6 mb-2 rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 flex items-center justify-between">
+                          <div>
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Submission Window</p>
+                            <p className="mt-1 text-[11px] font-black uppercase tracking-[0.1em] text-white/70">
+                              CURRENT ROUND: {submissionWindow?.currentRound || 0}
+                            </p>
+                            <p className="mt-1 text-sm font-semibold">
+                              STATUS: {submissionWindow?.currentRound === 0 ? <span className="text-white/50">NOT STARTED</span> : submissionWindow?.isOpen ? <span className="text-emerald-400">OPEN</span> : <span className="text-red-400">SUBMISSION ENDED</span>}
+                            </p>
+                            {submissionWindow?.updatedBy && (
+                              <p className="mt-0.5 text-[9px] text-white/30">Last updated by {submissionWindow.updatedBy}</p>
+                            )}
+                          </div>
+                          
+                          {((submissionWindow?.currentRound || 0) < 2 || submissionWindow?.isOpen) && (
+                            <button
+                              disabled={windowBusy}
+                              onClick={async () => {
+                                setWindowBusy(true);
+                                try {
+                                  const action = submissionWindow?.isOpen ? 'end' : 'start';
+                                  const res = await apiSend(`/api/submissions/state/${action}`, 'POST', { admin_id: user.id });
+                                  setSubmissionWindow(res);
+                                  flash(`Submission state updated successfully.`);
+                                } catch (e) {
+                                  fail(e);
+                                } finally {
+                                  setWindowBusy(false);
+                                }
+                              }}
+                              className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition ${submissionWindow?.isOpen ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'} rounded-lg disabled:opacity-50`}
+                            >
+                              {submissionWindow?.isOpen ? `End Round ${submissionWindow?.currentRound}` : `Start Round ${submissionWindow?.currentRound ? submissionWindow.currentRound + 1 : 1}`}
+                            </button>
+                          )}
+                        </div>
+                      )}
+
                       <div className={`${glass} mt-4 overflow-hidden rounded-xl`}>
                         <div className="overflow-x-auto">
                           <table className="w-full min-w-[800px] text-left">
@@ -1468,6 +1506,9 @@ export default function Admin() {
                               <tr className="border-b border-white/[0.07] text-[8px] font-black uppercase tracking-[0.16em] text-white/25">
                                 <th className="px-4 py-3.5">
                                   Team
+                                </th>
+                                <th className="px-4 py-3.5">
+                                  Round
                                 </th>
                                 <th className="px-4 py-3.5">
                                   File
@@ -1508,6 +1549,10 @@ export default function Admin() {
                                       <p className="mt-1 font-mono text-[8px] text-white/25">
                                         {t.code}
                                       </p>
+                                    </td>
+
+                                    <td className="px-4 py-3.5 text-[10px] text-white/50">
+                                      {sub ? `Round ${sub.round}` : "—"}
                                     </td>
 
                                     <td className="px-4 py-3.5">
@@ -1580,7 +1625,7 @@ export default function Admin() {
                                         <div className="flex gap-1.5">
                                           <a
                                             href={
-                                              sub.file_url
+                                              sub.file_url ? `${sub.file_url}&token=${localStorage.getItem('token')}` : "#"
                                             }
                                             target="_blank"
                                             rel="noreferrer"
@@ -3205,6 +3250,65 @@ export default function Admin() {
             </div>
           </div>
         )}
+        
+      {selectedSubmissionTeam && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020510]/80 p-4 backdrop-blur-md sm:p-6"
+          onClick={() => setSelectedSubmissionTeam(null)}
+        >
+          <div
+            className={`${glass} relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] p-6`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedSubmissionTeam(null)}
+              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.03] text-white/40 transition hover:bg-white/10 hover:text-white"
+            >
+              <X size={14} />
+            </button>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{selectedSubmissionTeam.team?.name || selectedSubmissionTeam.name} - ROUND {selectedSubmissionTeam.submission?.round} SUBMISSION</p>
+            <h3 className="mt-1 font-display text-2xl text-white">SUBMISSION DETAILS</h3>
+            
+            <div className="mt-6 space-y-6">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Status</p>
+                <p className="mt-1 text-sm font-semibold text-emerald-400">SUBMITTED ✓</p>
+              </div>
+              
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">PPT / PDF</p>
+                <p className="mt-1 text-sm text-white">{selectedSubmissionTeam.submission?.file_name}</p>
+                <a href={selectedSubmissionTeam.submission?.file_url ? `${selectedSubmissionTeam.submission.file_url}&token=${localStorage.getItem('token')}` : "#"} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+                  <ExternalLink size={12} /> View PPT
+                </a>
+              </div>
+              
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">GitHub Repository</p>
+                {selectedSubmissionTeam.submission?.github_url ? (
+                  <a href={selectedSubmissionTeam.submission?.github_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+                    <Github size={12} /> Open Github
+                  </a>
+                ) : <p className="mt-1 text-sm text-white/30">—</p>}
+              </div>
+
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Deployed Website</p>
+                {selectedSubmissionTeam.submission?.deployed_url ? (
+                  <a href={selectedSubmissionTeam.submission?.deployed_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+                    <ExternalLink size={12} /> Open Website
+                  </a>
+                ) : <p className="mt-1 text-sm text-white/30">—</p>}
+              </div>
+              
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Submitted At</p>
+                <p className="mt-1 text-sm text-white/70">{fmtDate(selectedSubmissionTeam.submission?.created_at)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

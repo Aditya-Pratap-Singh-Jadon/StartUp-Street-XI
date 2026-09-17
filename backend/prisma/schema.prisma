@@ -128,12 +128,25 @@ model Submission {
   file_data         Bytes?
   file_content_type String?
   github_url        String?
+  deployed_url      String?
+  drive_file_id     String?
   status            String   @default("submitted")
   submitted_by      String?
   updated_at        DateTime?
   created_at        DateTime @default(now())
   @@index([created_at])
   @@unique([team_id, round])
+}
+
+model SubmissionState {
+  id           String    @id @map("_id") @default("global")
+  currentRound Int       @default(0)
+  isOpen       Boolean   @default(true)
+  startedAt    DateTime?
+  endedAt      DateTime?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model TimelineEvent {

@@ -39,11 +39,13 @@ export default async function handler(req, res) {
         const out = [];
         for (const t of teams) {
           const members = await membersOf(t.id);
-          const sub = await prisma.submission.findUnique({ 
-            where: { team_id: t.id }, 
-            select: { id: true, file_name: true, github_url: true, created_at: true, status: true } 
+          const subs = await prisma.submission.findMany({ 
+            where: { team_id: t.id },
+            orderBy: { round: 'asc' },
+            select: { id: true, round: true, file_name: true, github_url: true, deployed_url: true, created_at: true, status: true } 
           });
-          out.push({ ...t, members, member_count: members.length, submission: sub || null });
+          // Backward compatibility for Admin.jsx before Phase 6
+          out.push({ ...t, members, member_count: members.length, submission: subs[0] || null, submissions: subs });
         }
         return res.status(200).json(out);
       }
