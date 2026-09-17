@@ -20,9 +20,11 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const API_URL = import.meta.env.VITE_API_URL || '';
+
   const refreshProfile = useCallback(async (uid) => {
     try {
-      const res = await fetch(`/api/auth?user_id=${uid}`);
+      const res = await fetch(`${API_URL}/api/auth?user_id=${uid}`);
       if (res.ok) {
         const p = await res.json();
         setProfile(p);
@@ -58,7 +60,7 @@ export function AuthProvider({ children }) {
   }, [refreshProfile]);
 
   const login = async (email, password) => {
-    const res = await fetch('/api/auth', {
+    const res = await fetch(`${API_URL}/api/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', email, password }),
@@ -76,7 +78,7 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (userData) => {
-    const res = await fetch('/api/auth', {
+    const res = await fetch(`${API_URL}/api/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'register', ...userData }),
@@ -92,7 +94,7 @@ export function AuthProvider({ children }) {
   };
 
   const verifyOtp = async (userData) => {
-    const res = await fetch('/api/auth', {
+    const res = await fetch(`${API_URL}/api/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'verify-otp', ...userData }),
@@ -110,7 +112,7 @@ export function AuthProvider({ children }) {
   };
 
   const googleLogin = async (credential, participant_type) => {
-    const res = await fetch('/api/auth', {
+    const res = await fetch(`${API_URL}/api/auth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'google', credential, participant_type }),
