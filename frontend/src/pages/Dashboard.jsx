@@ -12,22 +12,22 @@ import {
   Megaphone,
   CalendarClock,
   UploadCloud,
-  FileText,
-  Github,
-  ExternalLink,
-  ShieldAlert,
+  ArrowUpRight,
+  Trophy,
+  Sparkles,
+  UserRound,
+  Clock3,
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import Countdown, { useCountdown } from "../components/Countdown";
 import NotificationBell from "../components/NotificationBell";
 import {
   Loader,
-  Empty,
   FieldError,
   inputCls,
   labelCls,
 } from "../components/ui";
-import { apiGet, apiSend, inviteLink, EVENT_START_ISO } from "../lib/api";
+import { apiGet, apiSend, inviteLink } from "../lib/api";
 import Background from "../components/Background";
 
 function fmtDate(iso) {
@@ -41,46 +41,18 @@ function fmtDate(iso) {
 }
 
 const HOSTELS = [
-  "MH-A",
-  "MH-B",
-  "MH-BX",
-  "MH-C",
-  "MH-D",
-  "MH-DX",
-  "MH-E",
-  "MH-F",
-  "MH-G",
-  "MH-H",
-  "MH-J",
-  "MH-JX",
-  "MH-K",
-  "MH-L",
-  "MH-M",
-  "MH-MX",
-  "MH-N",
-  "MH-NX",
-  "MH-P",
-  "MH-Q",
-  "MH-R",
-  "MH-T",
-  "LH-A",
-  "LH-B",
-  "LH-C",
-  "LH-D",
-  "LH-E",
-  "LH-EX",
-  "LH-F",
-  "LH-G",
-  "LH-GX",
-  "LH-H",
-  "LH-J",
-  "LH-S",
+  "MH-A", "MH-B", "MH-BX", "MH-C", "MH-D", "MH-DX", "MH-E",
+  "MH-F", "MH-G", "MH-H", "MH-J", "MH-JX", "MH-K", "MH-L",
+  "MH-M", "MH-MX", "MH-N", "MH-NX", "MH-P", "MH-Q", "MH-R",
+  "MH-T", "LH-A", "LH-B", "LH-C", "LH-D", "LH-E", "LH-EX",
+  "LH-F", "LH-G", "LH-GX", "LH-H", "LH-J", "LH-S",
 ];
 
 export default function Dashboard() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { live, done } = useCountdown();
+
   const [team, setTeam] = useState(undefined);
   const [timeline, setTimeline] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
@@ -88,14 +60,17 @@ export default function Dashboard() {
   const [cfg, setCfg] = useState({});
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
+
   const [teamMsg, setTeamMsg] = useState(null);
   const [teamErr, setTeamErr] = useState(null);
   const [busy, setBusy] = useState(false);
+
   const [createName, setCreateName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const [renaming, setRenaming] = useState(false);
   const [renameVal, setRenameVal] = useState("");
   const [copied, setCopied] = useState(false);
+
   const [profileForm, setProfileForm] = useState({
     reg_no: "",
     block: "A",
@@ -104,78 +79,98 @@ export default function Dashboard() {
   const [profileErr, setProfileErr] = useState(null);
   const [profileBusy, setProfileBusy] = useState(false);
 
-  const fetchAll = useCallback(async (silent = false) => {
-    if (!user) return;
-    if (!silent) {
-      setLoading(true);
-      setErr(null);
-    }
-    try {
-      await refreshProfile(user.id || user._id);
-      const [t, tl, an, c] = await Promise.all([
-        apiGet(`/api/teams?user_id=${user.id}`),
-        apiGet("/api/timeline"),
-        apiGet("/api/announcements"),
-        apiGet("/api/config"),
-      ]);
-      setTeam(t);
-      setTimeline(tl);
-      setAnnouncements(an);
-      setCfg(c);
-      setRenameVal(t?.name || "");
-      if (t) {
-        try {
-          const s = await apiGet(`/api/submissions?team_id=${t.id}`);
-          setSubmission(s);
-        } catch {
+  const fetchAll = useCallback(
+    async (silent = false) => {
+      if (!user) return;
+
+      if (!silent) {
+        setLoading(true);
+        setErr(null);
+      }
+
+      try {
+        await refreshProfile(user.id || user._id);
+
+        const [t, tl, an, c] = await Promise.all([
+          apiGet(`/api/teams?user_id=${user.id}`),
+          apiGet("/api/timeline"),
+          apiGet("/api/announcements"),
+          apiGet("/api/config"),
+        ]);
+
+        setTeam(t);
+        setTimeline(tl);
+        setAnnouncements(an);
+        setCfg(c);
+        setRenameVal(t?.name || "");
+
+        if (t) {
+          try {
+            const s = await apiGet(`/api/submissions?team_id=${t.id}`);
+            setSubmission(s);
+          } catch {
+            setSubmission(null);
+          }
+        } else {
           setSubmission(null);
         }
-      } else setSubmission(null);
-    } catch (e) {
-      if (!silent) setErr(e instanceof Error ? e.message : "Failed to load dashboard");
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, [user, refreshProfile]);
+      } catch (e) {
+        if (!silent) {
+          setErr(
+            e instanceof Error ? e.message : "Failed to load dashboard"
+          );
+        }
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [user, refreshProfile]
+  );
 
   useEffect(() => {
     fetchAll();
+
     const id = setInterval(() => fetchAll(true), 15000);
+
     return () => clearInterval(id);
   }, [fetchAll]);
 
   if (!user) return null;
+
   const isLeader = !!team && team.leader_id === user.id;
   const teamMax = parseInt(cfg.team_max || "5", 10);
   const teamMin = parseInt(cfg.team_min || "3", 10);
   const subsOpen = (cfg.submissions_open || "false") === "true";
-  const eventLabel = done
-    ? "Event concluded"
-    : live
-      ? "Event live"
-      : "Event upcoming";
 
   const doCreate = async (e) => {
     e.preventDefault();
     setTeamErr(null);
     setTeamMsg(null);
-    if (createName.trim().length < 2)
+
+    if (createName.trim().length < 2) {
       return setTeamErr("Team name must be at least 2 characters.");
+    }
+
     setBusy(true);
+
     try {
       const t = await apiSend("/api/teams", "POST", {
         action: "create",
         name: createName.trim(),
         user_id: user.id,
       });
+
       setTeam(t);
       setRenameVal(t.name);
       setCreateName("");
+
       setTeamMsg(
-        `Team created. Your Team Code is ${t.code} — share it to invite members.`,
+        `Team created. Your Team Code is ${t.code} — share it to invite members.`
       );
     } catch (e) {
-      setTeamErr(e instanceof Error ? e.message : "Could not create team");
+      setTeamErr(
+        e instanceof Error ? e.message : "Could not create team"
+      );
     } finally {
       setBusy(false);
     }
@@ -185,21 +180,28 @@ export default function Dashboard() {
     e.preventDefault();
     setTeamErr(null);
     setTeamMsg(null);
-    if (!joinCode.trim())
+
+    if (!joinCode.trim()) {
       return setTeamErr("Enter a Team Code, e.g. SSXI-X7K4.");
+    }
+
     setBusy(true);
+
     try {
       const t = await apiSend("/api/teams", "POST", {
         action: "join",
         code: joinCode.trim(),
         user_id: user.id,
       });
+
       setTeam(t);
       setRenameVal(t.name);
       setJoinCode("");
       setTeamMsg(`Welcome to ${t.name}.`);
     } catch (e) {
-      setTeamErr(e instanceof Error ? e.message : "Could not join team");
+      setTeamErr(
+        e instanceof Error ? e.message : "Could not join team"
+      );
     } finally {
       setBusy(false);
     }
@@ -208,22 +210,28 @@ export default function Dashboard() {
   const doLeave = async () => {
     if (
       !confirm(
-        "Leave this team? If you are the last member the team will be disbanded.",
+        "Leave this team? If you are the last member the team will be disbanded."
       )
-    )
+    ) {
       return;
+    }
+
     setBusy(true);
     setTeamErr(null);
+
     try {
       await apiSend("/api/teams", "POST", {
         action: "leave",
         user_id: user.id,
       });
+
       setTeam(null);
       setSubmission(null);
       setTeamMsg("You left the team.");
     } catch (e) {
-      setTeamErr(e instanceof Error ? e.message : "Could not leave team");
+      setTeamErr(
+        e instanceof Error ? e.message : "Could not leave team"
+      );
     } finally {
       setBusy(false);
     }
@@ -234,19 +242,24 @@ export default function Dashboard() {
       setTeamErr("Team name must be at least 2 characters.");
       return;
     }
+
     setBusy(true);
     setTeamErr(null);
+
     try {
       const updated = await apiSend("/api/teams", "PUT", {
         team_id: team.id,
         user_id: user.id,
         name: renameVal.trim(),
       });
+
       setTeam({ ...team, name: updated.name });
       setRenaming(false);
       setTeamMsg("Team name updated.");
     } catch (e) {
-      setTeamErr(e instanceof Error ? e.message : "Could not rename team");
+      setTeamErr(
+        e instanceof Error ? e.message : "Could not rename team"
+      );
     } finally {
       setBusy(false);
     }
@@ -254,8 +267,10 @@ export default function Dashboard() {
 
   const doRemove = async (target_id) => {
     if (!team || !confirm("Remove this member from the team?")) return;
+
     setBusy(true);
     setTeamErr(null);
+
     try {
       await apiSend("/api/teams", "POST", {
         action: "remove_member",
@@ -263,10 +278,13 @@ export default function Dashboard() {
         user_id: user.id,
         target_id,
       });
+
       const t = await apiGet(`/api/teams?user_id=${user.id}`);
       setTeam(t);
     } catch (e) {
-      setTeamErr(e instanceof Error ? e.message : "Could not remove member");
+      setTeamErr(
+        e instanceof Error ? e.message : "Could not remove member"
+      );
     } finally {
       setBusy(false);
     }
@@ -274,6 +292,7 @@ export default function Dashboard() {
 
   const copyInvite = async () => {
     if (!team) return;
+
     try {
       await navigator.clipboard.writeText(inviteLink(team.code));
       setCopied(true);
@@ -286,14 +305,20 @@ export default function Dashboard() {
   const doCompleteProfile = async (e) => {
     e.preventDefault();
     setProfileErr(null);
-    if (!profileForm.reg_no || profileForm.reg_no.trim().length < 8)
+
+    if (!profileForm.reg_no || profileForm.reg_no.trim().length < 8) {
       return setProfileErr("Please enter a valid Registration Number.");
+    }
+
     if (
       !profileForm.room.trim() ||
       !/^(G\d*|\d+)$/i.test(profileForm.room.trim())
-    )
+    ) {
       return setProfileErr("Please enter a valid room number.");
+    }
+
     setProfileBusy(true);
+
     try {
       const res = await fetch("/api/auth", {
         method: "PUT",
@@ -308,8 +333,15 @@ export default function Dashboard() {
           room: profileForm.room,
         }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to update profile");
+
+      if (!res.ok) {
+        throw new Error(
+          data.error || "Failed to update profile"
+        );
+      }
+
       await refreshProfile(user.id || user._id);
     } catch (err) {
       setProfileErr(err.message);
@@ -322,100 +354,170 @@ export default function Dashboard() {
     profile?.participant_type === "vit_student" &&
     (!profile?.reg_no || !profile?.block || !profile?.room);
 
+  /*
+   * STARTUPSTREET XI — Participant Dashboard
+   * Presentation only: the API/auth/state logic above is unchanged.
+   *
+   * The entire dashboard is deliberately designed as one viewport:
+   * h-[100dvh] + overflow-hidden.
+   */
+  const panel =
+    "rounded-[20px] border border-white/[0.11] bg-[#091225]/80 backdrop-blur-2xl shadow-[0_24px_70px_rgba(0,0,0,0.30)]";
+
+  const inner =
+    "rounded-[15px] border border-white/[0.08] bg-white/[0.035]";
+
+  const IconBox = ({ children, violet = false }) => (
+    <span
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border ${violet
+          ? "border-violet-300/15 bg-violet-300/[0.09] text-violet-200"
+          : "border-cyan-300/15 bg-cyan-300/[0.09] text-cyan-200"
+        }`}
+    >
+      {children}
+    </span>
+  );
+
+  const SectionHead = ({ icon, title, right, violet = false }) => (
+    <div className="flex shrink-0 items-center justify-between gap-3">
+      <div className="flex items-center gap-2.5">
+        <IconBox violet={violet}>{icon}</IconBox>
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/42">
+            {title}
+          </p>
+        </div>
+      </div>
+      {right}
+    </div>
+  );
+
   return (
-    <div className="relative min-h-screen isolate overflow-hidden bg-black text-white">
+    <div className="relative h-[100dvh] w-full overflow-hidden bg-[#040813] text-white isolate">
       <Background />
-      <div className="relative z-10 flex min-h-screen flex-col bg-black/40 backdrop-blur-sm">
-        {/* top bar */}
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-black/60 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-            <Link to="/" className="flex items-baseline gap-2.5">
-              <span className="bg-white px-2 py-1 font-display text-sm font-bold text-black">
-                SS—XI
+
+      {/* Atmospheric lighting over the city background */}
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_12%_8%,rgba(91,140,255,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,217,255,0.09),transparent_25%),radial-gradient(circle_at_78%_90%,rgba(139,92,246,0.16),transparent_32%)]" />
+      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/25" />
+
+      <div className="relative z-10 flex h-[100dvh] flex-col overflow-hidden">
+        {/* ───────────────── HEADER ───────────────── */}
+        <header className="h-[62px] shrink-0 border-b border-white/[0.10] bg-[#050b18]/78 backdrop-blur-2xl">
+          <div className="mx-auto flex h-full max-w-[1540px] items-center justify-between px-5 lg:px-8">
+            <Link
+              to="/"
+              className="group flex items-center leading-none"
+              aria-label="StartupStreet XI home"
+            >
+              <span className="font-display text-[25px] font-black uppercase tracking-[-0.075em] text-white transition group-hover:text-cyan-50 sm:text-[29px]">
+                STARTUPSTREET
               </span>
-              <span className="hidden text-[11px] font-semibold uppercase tracking-[0.26em] text-white/60 sm:inline">
+              <span className="ml-2 font-display text-[25px] font-black uppercase tracking-[-0.075em] text-cyan-300 transition group-hover:text-cyan-200 sm:text-[29px]">
+                XI
+              </span>
+              <span className="ml-4 hidden h-5 w-px bg-white/15 sm:block" />
+              <span className="ml-4 hidden text-[9px] font-bold uppercase tracking-[0.22em] text-white/38 sm:block">
                 Participant
               </span>
             </Link>
-              <div className="flex items-center gap-2.5">
-              <NotificationBell userId={user.id} />
+
+            <div className="flex items-center gap-1.5">
+              <NotificationBell userId={user.id} className="shrink-0 z-1000" />
+
               <Link
                 to="/"
-                className="hidden border border-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 hover:border-cyan-300 hover:text-cyan-300 sm:inline-block"
+                className="hidden h-8 items-center rounded-lg px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white/45 transition hover:bg-white/[0.05] hover:text-white sm:flex"
               >
                 Home
               </Link>
+
               {profile?.role === "admin" && (
                 <Link
                   to="/admin"
-                  className="hidden border border-cyan-400/40 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-cyan-300 sm:inline-block"
+                  className="hidden h-8 items-center rounded-lg border border-cyan-300/15 bg-cyan-300/5 px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-cyan-200 sm:flex"
                 >
                   Admin
                 </Link>
               )}
+
               <button
                 onClick={() => {
                   signOut();
                   navigate("/");
                 }}
-                className="inline-flex items-center gap-1.5 border border-white/15 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-white/70 hover:border-cyan-300 hover:text-cyan-300"
+                className="flex h-8 items-center gap-1.5 rounded-lg border border-white/10 bg-white/2.5 px-3 text-[9px] font-bold uppercase tracking-[0.17em] text-white/45 transition hover:border-white/20 hover:text-white"
               >
-                <LogOut size={13} />{" "}
+                <LogOut size={12} />
                 <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12">
+        {/* ───────────────── VIEWPORT ───────────────── */}
+        <main className="mx-auto flex min-h-0 w-full max-w-385 flex-1 flex-col px-4 py-4 sm:px-5 lg:px-8">
           {loading ? (
-            <Loader label="Loading your dashboard" />
+            <div className="flex flex-1 items-center justify-center">
+              <Loader label="Loading your dashboard" />
+            </div>
           ) : err ? (
-            <div className="border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200">
-              {err}{" "}
-              <button
-                onClick={fetchAll}
-                className="font-semibold text-white underline"
-              >
-                Retry
-              </button>
+            <div className="flex flex-1 items-center justify-center">
+              <div className={`${panel} w-full max-w-md p-7`}>
+                <p className="text-sm text-red-200">{err}</p>
+                <button
+                  onClick={fetchAll}
+                  className="mt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-white underline"
+                >
+                  Retry
+                </button>
+              </div>
             </div>
           ) : needsProfileCompletion ? (
-            <div className="mx-auto w-full max-w-md border border-white/10 bg-black/80 p-8 backdrop-blur-xl">
-              <h1 className="font-display text-3xl font-medium tracking-tight">
-                Complete your profile
-              </h1>
-              <p className="mt-2 mb-6 text-sm text-white/60">
-                As a VIT student, we need a few more details to complete your
-                registration for the event.
-              </p>
-              <form onSubmit={doCompleteProfile} className="space-y-4">
-                <div>
-                  <label htmlFor="reg_no" className={labelCls}>
-                    Registration Number
-                  </label>
-                  <input
-                    id="reg_no"
-                    className={inputCls}
-                    placeholder="22BCE0001"
-                    value={profileForm.reg_no}
-                    onChange={(e) =>
-                      setProfileForm((f) => ({
-                        ...f,
-                        reg_no: e.target.value.toUpperCase(),
-                      }))
-                    }
-                  />
+            <div className="flex flex-1 items-center justify-center">
+              <div className={`${panel} w-full max-w-md p-7`}>
+                <div className="mb-6">
+                  <IconBox>
+                    <UserRound size={17} />
+                  </IconBox>
+                  <p className="mt-5 text-[9px] font-bold uppercase tracking-[0.24em] text-cyan-300">
+                    Registration
+                  </p>
+                  <h1 className="font-display mt-1.5 text-[31px] font-semibold tracking-[-0.045em]">
+                    Complete your profile
+                  </h1>
+                  <p className="mt-2 text-xs leading-relaxed text-white/48">
+                    A few details are required to complete your event
+                    registration.
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+
+                <form onSubmit={doCompleteProfile} className="space-y-3.5">
                   <div>
-                    <label htmlFor="block" className={labelCls}>
-                      Hostel
+                    <label htmlFor="reg_no" className={labelCls}>
+                      Registration Number
                     </label>
-                    <div className="relative">
+                    <input
+                      id="reg_no"
+                      className={`${inputCls} mt-1.5`}
+                      placeholder="22BCE0001"
+                      value={profileForm.reg_no}
+                      onChange={(e) =>
+                        setProfileForm((f) => ({
+                          ...f,
+                          reg_no: e.target.value.toUpperCase(),
+                        }))
+                      }
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="block" className={labelCls}>
+                        Hostel
+                      </label>
                       <select
                         id="block"
-                        className={`${inputCls} appearance-none cursor-pointer`}
+                        className={`${inputCls} mt-1.5 cursor-pointer appearance-none`}
                         value={profileForm.block}
                         onChange={(e) =>
                           setProfileForm((f) => ({
@@ -428,172 +530,213 @@ export default function Dashboard() {
                           <option
                             key={h}
                             value={h}
-                            className="bg-black text-white"
+                            className="bg-[#080d1c] text-white"
                           >
                             {h}
                           </option>
                         ))}
                       </select>
                     </div>
+
+                    <div>
+                      <label htmlFor="room" className={labelCls}>
+                        Room Number
+                      </label>
+                      <input
+                        id="room"
+                        className={`${inputCls} mt-1.5`}
+                        placeholder="G or 101"
+                        value={profileForm.room}
+                        onChange={(e) =>
+                          setProfileForm((f) => ({
+                            ...f,
+                            room: e.target.value.toUpperCase(),
+                          }))
+                        }
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor="room" className={labelCls}>
-                      Room Number
-                    </label>
-                    <input
-                      id="room"
-                      className={inputCls}
-                      placeholder="G or 101"
-                      value={profileForm.room}
-                      onChange={(e) =>
-                        setProfileForm((f) => ({
-                          ...f,
-                          room: e.target.value.toUpperCase(),
-                        }))
-                      }
-                    />
-                  </div>
-                </div>
-                <FieldError message={profileErr} />
-                <button
-                  disabled={profileBusy}
-                  className="inline-flex w-full items-center justify-center gap-2 bg-white px-6 py-3 text-[12px] font-bold uppercase tracking-[0.16em] text-black hover:bg-cyan-100 disabled:opacity-50"
-                >
-                  {profileBusy ? "Saving..." : "Save details & continue"}
-                </button>
-              </form>
+
+                  <FieldError message={profileErr} />
+
+                  <button
+                    disabled={profileBusy}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-[#050816] transition hover:bg-cyan-100 disabled:opacity-50"
+                  >
+                    {profileBusy ? "Saving..." : "Save details & continue"}
+                    <ArrowUpRight size={14} />
+                  </button>
+                </form>
+              </div>
             </div>
           ) : (
-            <>
-              {/* greeting */}
-              <div className="flex flex-wrap items-end justify-between gap-5">
-                <div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.28em] text-cyan-200">
-                    {eventLabel} · 18–19 September
-                  </p>
-                  <h1 className="font-display mt-2 text-4xl tracking-tight sm:text-5xl">
-                    Hello, {profile?.name || "founder"}.
+            <div className="flex min-h-0 flex-1 flex-col">
+              {/* ───────────── HERO ROW ───────────── */}
+              <div className="flex h-[78px] shrink-0 items-center justify-between gap-5">
+                <div className="min-w-0">
+
+                  <h1 className="font-display mt-1 truncate text-[30px] font-semibold leading-none tracking-[-0.055em] sm:text-[36px]">
+                    Hello, {profile?.name || "Founder"}.
                   </h1>
-                  <p className="mt-2 text-sm text-white/60">
+
+                  <p className="mt-1 truncate text-[10px] text-white/38">
                     {profile?.email}
-                    {profile?.reg_no ? ` · ${profile.reg_no}` : ""} ·{" "}
-                    {isLeader
-                      ? "Team Leader"
-                      : team
-                        ? "Participant"
-                        : "No team yet"}
+                    {profile?.reg_no ? `  ·  ${profile.reg_no}` : ""}
+                    {"  ·  "}
+                    <span className="text-white/62">
+                      {isLeader
+                        ? "Team Leader"
+                        : team
+                          ? "Participant"
+                          : "No team yet"}
+                    </span>
                   </p>
                 </div>
-                <Countdown />
+
+                <div className="shrink-0">
+                  <Countdown />
+                </div>
               </div>
 
-
-              <div className="mt-8 grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-                {/* LEFT */}
-                <div className="space-y-6">
-                  {/* TEAM CARD */}
+              {/* ───────────── DASHBOARD GRID ───────────── */}
+              <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(250px,0.78fr)_minmax(250px,0.78fr)]">
+                {/* TEAM + SUBMISSION */}
+                <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_104px] gap-4">
                   <section
-                    className="border border-white/10 bg-white/5 backdrop-blur-md"
+                    className={`${panel} flex min-h-0 flex-col overflow-hidden`}
                     aria-label="Your team"
                   >
-                    <div className="flex items-center justify-between border-b border-white/10 px-5 py-3.5 sm:px-6">
-                      <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">
-                        <Users size={14} className="text-cyan-300" /> Your team
-                      </p>
-                      {team && (
-                        <span className="bg-white px-2.5 py-1 font-mono text-xs font-bold tracking-widest text-black">
-                          {team.code}
-                        </span>
-                      )}
+                    <div className="flex shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3">
+                      <SectionHead
+                        icon={<Users size={14} />}
+                        title="Your team"
+                        right={
+                          team && (
+                            <button
+                              onClick={copyInvite}
+                              className="flex items-center gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.09]"
+                            >
+                              {copied ? (
+                                <Check size={11} />
+                              ) : (
+                                <Copy size={11} />
+                              )}
+                              {team.code}
+                            </button>
+                          )
+                        }
+                      />
                     </div>
-                    <div className="p-5 sm:p-6">
+
+                    <div className="min-h-0 flex-1 p-4">
                       {teamMsg && (
-                        <p className="mb-3 border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-[13px] text-emerald-200">
+                        <div className="mb-2 rounded-lg border border-emerald-300/15 bg-emerald-300/[0.055] px-3 py-2 text-[10px] text-emerald-200">
                           {teamMsg}
-                        </p>
+                        </div>
                       )}
+
                       {teamErr && (
-                        <p className="mb-3 border border-red-500/30 bg-red-500/10 px-3.5 py-2.5 text-[13px] text-red-200">
+                        <div className="mb-2 rounded-lg border border-red-300/15 bg-red-300/[0.055] px-3 py-2 text-[10px] text-red-200">
                           {teamErr}
-                        </p>
+                        </div>
                       )}
+
                       {!team ? (
-                        <div className="grid gap-6 md:grid-cols-2">
+                        <div className="grid h-full gap-3 md:grid-cols-2">
                           <form
                             onSubmit={doCreate}
-                            className="border border-white/10 bg-white/5 p-5"
+                            className={`${inner} flex min-h-0 flex-col justify-between p-4`}
                           >
-                            <p className="font-display text-xl">
-                              Create a team
-                            </p>
-                            <p className="mt-1 text-[13px] text-white/60">
-                              You become the leader and receive a unique Team
-                              Code.
-                            </p>
-                            <label
-                              htmlFor="tname"
-                              className={`${labelCls} mt-4`}
-                            >
-                              Team name
-                            </label>
-                            <input
-                              id="tname"
-                              className={inputCls}
-                              placeholder="e.g. Street Vendors"
-                              value={createName}
-                              onChange={(e) => setCreateName(e.target.value)}
-                              maxLength={60}
-                            />
-                            <button
-                              disabled={busy}
-                              className="mt-4 inline-flex w-full items-center justify-center gap-2 bg-white px-5 py-2.5 text-[12px] font-bold uppercase tracking-[0.14em] text-black hover:bg-cyan-100 disabled:opacity-50"
-                            >
-                              <Plus size={14} /> Create team
-                            </button>
+                            <div>
+                              <IconBox>
+                                <Plus size={15} />
+                              </IconBox>
+                              <h2 className="font-display mt-4 text-[22px] font-semibold tracking-[-0.045em]">
+                                Create a team
+                              </h2>
+                              <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-white/42">
+                                Start your team and become its leader.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="tname"
+                                className={labelCls}
+                              >
+                                Team name
+                              </label>
+                              <input
+                                id="tname"
+                                className={`${inputCls} mt-1`}
+                                placeholder="e.g. Street Vendors"
+                                value={createName}
+                                onChange={(e) =>
+                                  setCreateName(e.target.value)
+                                }
+                                maxLength={60}
+                              />
+                              <button
+                                disabled={busy}
+                                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.18em] text-[#050816] shadow-[0_8px_25px_rgba(255,255,255,0.08)] transition hover:bg-cyan-100 disabled:opacity-50"
+                              >
+                                Create team
+                                <ArrowUpRight size={12} />
+                              </button>
+                            </div>
                           </form>
+
                           <form
                             onSubmit={doJoin}
-                            className="border border-white/10 bg-white/5 p-5"
+                            className={`${inner} flex min-h-0 flex-col justify-between p-4`}
                           >
-                            <p className="font-display text-xl">
-                              Join with code
-                            </p>
-                            <p className="mt-1 text-[13px] text-white/60">
-                              Ask your leader for the Team Code, or open an
-                              invite link.
-                            </p>
-                            <label
-                              htmlFor="jcode"
-                              className={`${labelCls} mt-4`}
-                            >
-                              Team code
-                            </label>
-                            <input
-                              id="jcode"
-                              className={`${inputCls} font-mono uppercase`}
-                              placeholder="SSXI-XXXX"
-                              value={joinCode}
-                              onChange={(e) =>
-                                setJoinCode(e.target.value.toUpperCase())
-                              }
-                              maxLength={12}
-                            />
-                            <button
-                              disabled={busy}
-                              className="mt-4 inline-flex w-full items-center justify-center gap-2 border border-white/25 px-5 py-2.5 text-[12px] font-bold uppercase tracking-[0.14em] hover:border-cyan-300 hover:text-cyan-300 disabled:opacity-50"
-                            >
-                              Join team
-                            </button>
+                            <div>
+                              <IconBox violet>
+                                <Users size={15} />
+                              </IconBox>
+                              <h2 className="font-display mt-4 text-[22px] font-semibold tracking-[-0.045em]">
+                                Join a team
+                              </h2>
+                              <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-white/42">
+                                Use the unique code shared by your leader.
+                              </p>
+                            </div>
+
+                            <div>
+                              <label
+                                htmlFor="jcode"
+                                className={labelCls}
+                              >
+                                Team code
+                              </label>
+                              <input
+                                id="jcode"
+                                className={`${inputCls} mt-1 font-mono uppercase`}
+                                placeholder="SSXI-XXXX"
+                                value={joinCode}
+                                onChange={(e) =>
+                                  setJoinCode(e.target.value.toUpperCase())
+                                }
+                                maxLength={12}
+                              />
+                              <button
+                                disabled={busy}
+                                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.13] bg-white/[0.025] px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-violet-300/35 hover:bg-violet-300/[0.06] hover:text-violet-100 disabled:opacity-50"
+                              >
+                                Join team
+                                <ArrowUpRight size={12} />
+                              </button>
+                            </div>
                           </form>
                         </div>
                       ) : (
-                        <>
-                          <div className="flex flex-wrap items-start justify-between gap-4">
-                            <div>
+                        <div className="flex h-full min-h-0 flex-col">
+                          <div className="flex shrink-0 items-start justify-between gap-3">
+                            <div className="min-w-0">
                               {renaming ? (
                                 <div className="flex gap-2">
                                   <input
-                                    className={inputCls}
+                                    className={`${inputCls} !h-9`}
                                     value={renameVal}
                                     onChange={(e) =>
                                       setRenameVal(e.target.value)
@@ -604,7 +747,7 @@ export default function Dashboard() {
                                   <button
                                     onClick={doRename}
                                     disabled={busy}
-                                    className="bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider text-black disabled:opacity-50"
+                                    className="rounded-lg bg-white px-3 text-[9px] font-black uppercase tracking-wider text-black disabled:opacity-50"
                                   >
                                     Save
                                   </button>
@@ -613,286 +756,355 @@ export default function Dashboard() {
                                       setRenaming(false);
                                       setRenameVal(team.name);
                                     }}
-                                    className="border border-white/20 px-4 py-2 text-xs font-bold uppercase tracking-wider"
+                                    className="rounded-lg border border-white/10 px-3 text-[9px] font-bold uppercase tracking-wider text-white/55"
                                   >
                                     Cancel
                                   </button>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2.5">
-                                  <h2 className="font-display text-3xl tracking-tight">
+                                <div className="flex items-center gap-2">
+                                  <h2 className="font-display truncate text-[27px] font-semibold leading-none tracking-[-0.055em]">
                                     {team.name}
                                   </h2>
                                   {isLeader && (
                                     <button
                                       onClick={() => setRenaming(true)}
                                       aria-label="Rename team"
-                                      className="p-1.5 text-white/45 hover:text-cyan-300"
+                                      className="rounded-md p-1.5 text-white/30 transition hover:bg-cyan-300/10 hover:text-cyan-200"
                                     >
-                                      <Pencil size={15} />
+                                      <Pencil size={13} />
                                     </button>
                                   )}
                                 </div>
                               )}
-                              <p className="mt-1.5 text-[13px] text-white/60">
-                                {team.members.length} of {teamMax} members ·{" "}
-                                {isLeader ? "You are the leader" : "Member"} ·
-                                formed {fmtDate(team.created_at)}
+
+                              <p className="mt-1.5 text-[10px] text-white/38">
+                                {team.members.length}/{teamMax} members
+                                <span className="mx-1.5 text-white/15">
+                                  •
+                                </span>
+                                {isLeader ? "You are the leader" : "Team member"}
                               </p>
                             </div>
+
+                            <p className="shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.15em] text-white/32">
+                              Min {teamMin} / Max {teamMax}
+                            </p>
+                          </div>
+
+                          <div className="mt-4 flex min-h-0 flex-1 flex-col">
+                            <div className="mb-2 flex shrink-0 items-center justify-between">
+                              <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/28">
+                                Team members
+                              </p>
+                              <button
+                                onClick={copyInvite}
+                                className="text-[8px] font-bold uppercase tracking-[0.16em] text-cyan-200/60 transition hover:text-cyan-200 sm:hidden"
+                              >
+                                {copied ? "Copied" : "Copy invite"}
+                              </button>
+                            </div>
+
+                            <ul className="grid min-h-0 flex-1 grid-cols-1 content-start gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                              {team.members.map((m) => {
+                                const isMe = m.user_id === user.id;
+                                const isLead = m.user_id === team.leader_id;
+
+                                return (
+                                  <li
+                                    key={m.user_id}
+                                    className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-white/[0.075] bg-white/[0.035] px-2.5 py-2"
+                                  >
+                                    <div className="flex min-w-0 items-center gap-2.5">
+                                      <span
+                                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] font-display text-[10px] font-bold ${isLead
+                                            ? "border border-cyan-300/25 bg-cyan-300/[0.09] text-cyan-100"
+                                            : "bg-white/[0.065] text-white/70"
+                                          }`}
+                                      >
+                                        {(m.profile?.name || "?")
+                                          .split(" ")
+                                          .map((w) => w[0])
+                                          .slice(0, 2)
+                                          .join("")
+                                          .toUpperCase()}
+                                      </span>
+
+                                      <div className="min-w-0">
+                                        <p className="truncate text-[11px] font-semibold text-white/78">
+                                          {m.profile?.name || "Member"}
+                                          {isMe ? " (you)" : ""}
+                                        </p>
+                                        <p className="truncate text-[8px] text-white/28">
+                                          {m.profile?.email || ""}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex shrink-0 items-center gap-1">
+                                      {isLead && (
+                                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-cyan-300/[0.08] text-cyan-200">
+                                          <Crown size={10} />
+                                        </span>
+                                      )}
+
+                                      {isLeader && !isMe && (
+                                        <button
+                                          onClick={() =>
+                                            doRemove(m.user_id)
+                                          }
+                                          disabled={busy}
+                                          aria-label={`Remove ${m.profile?.name || "member"
+                                            }`}
+                                          className="rounded-md p-1 text-white/18 transition hover:bg-red-300/10 hover:text-red-200 disabled:opacity-40"
+                                        >
+                                          <UserMinus size={12} />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+
+                          <div className="mt-2 flex shrink-0 items-center justify-between border-t border-white/[0.07] pt-2">
+                            <p className="text-[8px] text-white/24">
+                              Formed {fmtDate(team.created_at)}
+                            </p>
                             <button
-                              onClick={copyInvite}
-                              className="inline-flex items-center gap-1.5 border border-white/20 px-3.5 py-2 text-[11px] font-bold uppercase tracking-[0.14em] hover:border-cyan-300 hover:text-cyan-300"
+                              onClick={doLeave}
+                              disabled={busy}
+                              className="text-[8px] font-bold uppercase tracking-[0.15em] text-white/28 transition hover:text-red-200 disabled:opacity-50"
                             >
-                              {copied ? (
-                                <Check size={13} />
-                              ) : (
-                                <Copy size={13} />
-                              )}{" "}
-                              {copied ? "Copied" : "Copy invite link"}
+                              Leave team
                             </button>
                           </div>
-                          <p className="mt-3 break-all border border-dashed border-white/20 bg-white/5 px-3.5 py-2.5 font-mono text-xs text-white/70">
-                            {inviteLink(team.code)}
-                          </p>
-                          <ul className="mt-5 divide-y divide-white/10 border-y border-white/10">
-                            {team.members.map((m) => {
-                              const isMe = m.user_id === user.id;
-                              const isLead = m.user_id === team.leader_id;
-                              return (
-                                <li
-                                  key={m.user_id}
-                                  className="flex items-center justify-between gap-3 py-3"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <span
-                                      className={`flex h-9 w-9 items-center justify-center font-display text-sm italic ${isLead ? "bg-cyan-900 text-white border border-cyan-400" : "bg-white/10 text-white"}`}
-                                    >
-                                      {(m.profile?.name || "?")
-                                        .split(" ")
-                                        .map((w) => w[0])
-                                        .slice(0, 2)
-                                        .join("")
-                                        .toUpperCase()}
-                                    </span>
-                                    <div>
-                                      <p className="text-sm font-semibold">
-                                        {m.profile?.name || "Member"}
-                                        {isMe ? " (you)" : ""}
-                                      </p>
-                                      <p className="text-xs text-white/50">
-                                        {m.profile?.email || ""}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    {isLead && (
-                                      <span className="inline-flex items-center gap-1 bg-cyan-900/40 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-200 border border-cyan-500/30">
-                                        <Crown size={11} /> Leader
-                                      </span>
-                                    )}
-                                    {isLeader && !isMe && (
-                                      <button
-                                        onClick={() => doRemove(m.user_id)}
-                                        disabled={busy}
-                                        aria-label={`Remove ${m.profile?.name || "member"}`}
-                                        className="p-1.5 text-white/40 hover:text-cyan-300 disabled:opacity-40"
-                                      >
-                                        <UserMinus size={15} />
-                                      </button>
-                                    )}
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          <button
-                            onClick={doLeave}
-                            disabled={busy}
-                            className="mt-4 text-[12px] font-bold uppercase tracking-[0.16em] text-white/50 underline decoration-white/40 underline-offset-4 hover:text-cyan-300 disabled:opacity-50"
-                          >
-                            Leave team
-                          </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </section>
 
-                  {/* SUBMISSION CARD */}
+                  {/* SUBMISSION */}
                   <section
-                    className="border border-white/10 bg-black/60 text-white"
+                    className={`${panel} flex min-h-0 items-center justify-between gap-4 overflow-hidden px-4 py-3`}
                     aria-label="Final review submission"
                   >
-                    <div className="flex items-center justify-between border-b border-white/15 px-5 py-3.5 sm:px-6">
-                      <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/70">
-                        <UploadCloud size={14} className="text-cyan-400" />{" "}
-                        Final review submission
-                      </p>
-                      {submission ? (
-                        <span className="bg-emerald-400/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200 border border-emerald-400/30">
-                          Submitted
-                        </span>
-                      ) : (
-                        <span
-                          className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] border ${subsOpen ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300" : "border-white/20 text-white/60"}`}
-                        >
-                          {subsOpen ? "Open" : "Closed"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="p-5 sm:p-6">
-                      {!team ? (
-                        <p className="text-sm text-white/65">
-                          Join or create a team to unlock submissions.
-                          Submissions belong to the team, not to individuals.
-                        </p>
-                      ) : !subsOpen && !submission ? (
-                        <p className="text-sm text-white/65">
-                          Submissions are currently closed. The organizers will
-                          open the Final Review Submission page during the event
-                          — watch announcements.
-                        </p>
-                      ) : (
-                        <>
-                          {team.is_selected_for_jury && (
-                            <div className="mb-5 bg-cyan-900/30 border border-cyan-400/50 p-4">
-                              <p className="text-sm font-bold text-white">
-                                🏆 Selected for Jury Round!
-                              </p>
-                              <p className="text-xs text-white/80 mt-1">
-                                Your team has advanced to the final jury
-                                presentation.
-                              </p>
-                            </div>
-                          )}
-                          <p className="text-sm text-white/65 mb-5">
-                            Submissions for Round 1 (Internal) and Round 2
-                            (Jury) are managed in the dedicated portal.
+                    <div className="flex min-w-0 items-center gap-3">
+                      <IconBox violet>
+                        <UploadCloud size={14} />
+                      </IconBox>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-[9px] font-bold uppercase tracking-[0.19em] text-white/48">
+                            Final review
                           </p>
-                          <Link
-                            to="/submissions"
-                            className="inline-flex items-center gap-2 bg-white px-6 py-3 text-[12px] font-bold uppercase tracking-[0.16em] text-black transition hover:bg-cyan-100"
-                          >
-                            Go to Submissions Portal
-                          </Link>
-                        </>
-                      )}
+                          {submission ? (
+                            <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.07] px-2 py-0.5 text-[7px] font-black uppercase tracking-wider text-emerald-200">
+                              Submitted
+                            </span>
+                          ) : (
+                            <span
+                              className={`rounded-full border px-2 py-0.5 text-[7px] font-black uppercase tracking-wider ${subsOpen
+                                  ? "border-cyan-300/15 bg-cyan-300/[0.07] text-cyan-200"
+                                  : "border-white/10 text-white/30"
+                                }`}
+                            >
+                              {subsOpen ? "Open" : "Closed"}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-0.5 truncate text-[9px] text-white/32">
+                          {!team
+                            ? "Join or create a team to unlock submissions."
+                            : !subsOpen && !submission
+                              ? "Submissions are currently closed."
+                              : "Round 1 and Round 2 are managed in the portal."}
+                        </p>
+                      </div>
                     </div>
+
+                    {team && (subsOpen || submission) && (
+                      <Link
+                        to="/submissions"
+                        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-[8px] font-black uppercase tracking-[0.16em] text-[#050816] shadow-[0_7px_24px_rgba(255,255,255,0.08)] transition hover:bg-cyan-100"
+                      >
+                        Open portal
+                        <ArrowUpRight size={11} />
+                      </Link>
+                    )}
                   </section>
                 </div>
 
-                {/* RIGHT */}
-                <div className="space-y-6">
-                  <section
-                    className="border border-white/10 bg-white/5 backdrop-blur-md"
-                    aria-label="Announcements"
-                  >
-                    <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3.5">
-                      <Megaphone size={14} className="text-cyan-300" />
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">
-                        Announcements
-                      </p>
-                    </div>
-                    <div className="max-h-[340px] overflow-y-auto">
-                      {announcements.length === 0 && (
-                        <p className="px-5 py-6 text-sm text-white/50">
+                {/* ANNOUNCEMENTS */}
+                <section
+                  className={`${panel} flex min-h-0 flex-col overflow-hidden`}
+                  aria-label="Announcements"
+                >
+                  <div className="border-b border-white/[0.08] px-4 py-3">
+                    <SectionHead
+                      icon={<Megaphone size={14} />}
+                      title="Announcements"
+                      right={
+                        <Sparkles
+                          size={13}
+                          className="text-white/20"
+                        />
+                      }
+                    />
+                  </div>
+
+                  <div className="min-h-0 flex-1 overflow-hidden p-2.5">
+                    {announcements.length === 0 ? (
+                      <div className="flex h-full items-center justify-center text-center">
+                        <p className="text-[10px] text-white/25">
                           No announcements yet.
                         </p>
-                      )}
-                      {announcements.slice(0, 8).map((a) => (
-                        <article
-                          key={a.id}
-                          className="border-b border-white/10 px-5 py-4 last:border-0"
-                        >
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold">{a.title}</p>
-                            {a.priority !== "normal" && (
+                      </div>
+                    ) : (
+                      <div className="flex h-full flex-col gap-1 overflow-hidden">
+                        {announcements.slice(0, 5).map((a, i) => (
+                          <article
+                            key={a.id}
+                            className={`min-h-0 flex-1 rounded-xl border border-white/[0.065] bg-white/[0.025] px-3 py-2.5 ${i === 0
+                                ? "border-cyan-300/10 bg-cyan-300/[0.025]"
+                                : ""
+                              }`}
+                          >
+                            <div className="flex items-center gap-1.5">
                               <span
-                                className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] ${a.priority === "urgent" ? "bg-cyan-300 text-black" : "border border-cyan-300/40 text-cyan-300"}`}
-                              >
-                                {a.priority}
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-1 text-[13px] leading-relaxed whitespace-pre-line text-white/65">
-                            {a.content}
-                          </p>
-                          <p className="mt-1.5 text-[11px] text-white/40">
-                            {fmtDate(a.created_at)}
-                          </p>
-                        </article>
-                      ))}
-                    </div>
-                  </section>
+                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${a.priority === "urgent"
+                                    ? "bg-cyan-300 shadow-[0_0_10px_rgba(56,217,255,0.8)]"
+                                    : "bg-white/20"
+                                  }`}
+                              />
+                              <p className="truncate text-[10px] font-semibold text-white/75">
+                                {a.title}
+                              </p>
 
+                              {a.priority !== "normal" && (
+                                <span className="ml-auto shrink-0 rounded-full border border-cyan-300/15 bg-cyan-300/[0.06] px-1.5 py-0.5 text-[6px] font-black uppercase tracking-wider text-cyan-200">
+                                  {a.priority}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed text-white/34">
+                              {a.content}
+                            </p>
+
+                            <p className="mt-1 flex items-center gap-1 text-[7px] text-white/20">
+                              <Clock3 size={8} />
+                              {fmtDate(a.created_at)}
+                            </p>
+                          </article>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* TIMELINE + ACCOUNT */}
+                <div className="grid min-h-0 grid-rows-[minmax(0,1fr)_92px] gap-4">
                   <section
-                    className="border border-white/10 bg-white/5 backdrop-blur-md"
+                    className={`${panel} flex min-h-0 flex-col overflow-hidden`}
                     aria-label="Live timeline"
                   >
-                    <div className="flex items-center gap-2 border-b border-white/10 px-5 py-3.5">
-                      <CalendarClock size={14} className="text-cyan-300" />
-                      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">
-                        Live timeline
-                      </p>
+                    <div className="border-b border-white/[0.08] px-4 py-3">
+                      <SectionHead
+                        icon={<CalendarClock size={14} />}
+                        title="Live timeline"
+                        violet
+                      />
                     </div>
-                    <ol className="max-h-[340px] overflow-y-auto px-5 py-4">
-                      {timeline.length === 0 && (
-                        <p className="py-2 text-sm text-white/50">
-                          Schedule coming soon.
-                        </p>
-                      )}
-                      {timeline.map((t) => (
-                        <li
-                          key={t.id}
-                          className="relative border-l border-white/15 py-2.5 pr-1 pl-5 last:pb-0"
-                        >
-                          <span
-                            className={`absolute top-3.5 -left-[5px] h-2.5 w-2.5 rotate-45 ${t.is_current ? "bg-cyan-300" : t.is_completed ? "bg-cyan-300/35" : "border border-white/35 bg-black"}`}
-                            aria-hidden
-                          />
-                          <p
-                            className={`text-sm font-semibold ${t.is_current ? "text-cyan-300" : ""}`}
-                          >
-                            {t.title}
+
+                    <div className="min-h-0 flex-1 overflow-hidden px-4 py-2.5">
+                      {timeline.length === 0 ? (
+                        <div className="flex h-full items-center">
+                          <p className="text-[10px] text-white/25">
+                            Schedule coming soon.
                           </p>
-                          {t.event_time && (
-                            <p className="text-[11px] text-white/45">
-                              {fmtDate(t.event_time)}
-                            </p>
-                          )}
-                        </li>
-                      ))}
-                    </ol>
+                        </div>
+                      ) : (
+                        <ol className="flex h-full flex-col justify-between">
+                          {timeline.slice(0, 7).map((t) => (
+                            <li
+                              key={t.id}
+                              className="flex min-h-0 items-center gap-2.5"
+                            >
+                              <div className="flex w-3 shrink-0 justify-center">
+                                <span
+                                  className={`h-1.5 w-1.5 rotate-45 ${t.is_current
+                                      ? "bg-cyan-300 shadow-[0_0_11px_rgba(56,217,255,0.8)]"
+                                      : t.is_completed
+                                        ? "bg-cyan-300/35"
+                                        : "border border-white/25"
+                                    }`}
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <p
+                                  className={`truncate text-[9px] font-semibold ${t.is_current
+                                      ? "text-cyan-200"
+                                      : "text-white/58"
+                                    }`}
+                                >
+                                  {t.title}
+                                </p>
+                                {t.event_time && (
+                                  <p className="truncate text-[7px] text-white/22">
+                                    {fmtDate(t.event_time)}
+                                  </p>
+                                )}
+                              </div>
+                            </li>
+                          ))}
+                        </ol>
+                      )}
+                    </div>
+
                     <Link
                       to="/#timeline"
-                      className="block border-t border-white/10 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-cyan-300 hover:underline"
+                      className="flex shrink-0 items-center justify-between border-t border-white/[0.08] px-4 py-2.5 text-[8px] font-black uppercase tracking-[0.18em] text-cyan-200/60 transition hover:bg-cyan-300/[0.035] hover:text-cyan-200"
                     >
                       Full schedule
+                      <ArrowUpRight size={10} />
                     </Link>
                   </section>
 
+                  {/* ACCOUNT */}
                   <section
-                    className="border border-white/10 bg-white/5 p-5 backdrop-blur-md"
+                    className={`${panel} flex min-h-0 items-center justify-between gap-3 px-4 py-3`}
                     aria-label="Account"
                   >
-                    <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
-                      Account
-                    </p>
-                    <p className="font-display mt-2 text-xl">{profile?.name}</p>
-                    <p className="text-[13px] text-white/60">
-                      {profile?.email}
-                    </p>
-                    <FieldError message={null} />
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border border-white/[0.08] bg-white/[0.045] text-white/45">
+                        <UserRound size={13} />
+                      </span>
+
+                      <div className="min-w-0">
+                        <p className="truncate text-[10px] font-semibold text-white/70">
+                          {profile?.name}
+                        </p>
+                        <p className="truncate text-[8px] text-white/25">
+                          {profile?.email}
+                        </p>
+                      </div>
+                    </div>
+
                     <Link
                       to="/results"
-                      className="mt-4 inline-block text-[12px] font-bold uppercase tracking-[0.16em] text-cyan-300 underline underline-offset-4"
+                      className="shrink-0 text-[8px] font-black uppercase tracking-[0.16em] text-cyan-200/65 transition hover:text-cyan-100"
                     >
-                      View results
+                      Results
                     </Link>
                   </section>
                 </div>
               </div>
-            </>
+            </div>
           )}
         </main>
       </div>
