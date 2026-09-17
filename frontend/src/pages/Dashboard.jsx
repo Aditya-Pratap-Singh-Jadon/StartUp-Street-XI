@@ -61,7 +61,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState(null);
 
-  const [teamMsg, setTeamMsg] = useState(null);
+  const [toast, setToast] = useState(null);
   const [teamErr, setTeamErr] = useState(null);
   const [busy, setBusy] = useState(false);
 
@@ -135,6 +135,13 @@ export default function Dashboard() {
     return () => clearInterval(id);
   }, [fetchAll]);
 
+  useEffect(() => {
+    if (!toast) return;
+
+    const id = setTimeout(() => setToast(null), 7000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   if (!user) return null;
 
   const isLeader = !!team && team.leader_id === user.id;
@@ -164,7 +171,7 @@ export default function Dashboard() {
       setRenameVal(t.name);
       setCreateName("");
 
-      setTeamMsg(
+      setToast(
         `Team created. Your Team Code is ${t.code} — share it to invite members.`
       );
     } catch (e) {
@@ -197,7 +204,7 @@ export default function Dashboard() {
       setTeam(t);
       setRenameVal(t.name);
       setJoinCode("");
-      setTeamMsg(`Welcome to ${t.name}.`);
+      setToast(`Welcome to ${t.name}.`);
     } catch (e) {
       setTeamErr(
         e instanceof Error ? e.message : "Could not join team"
@@ -227,7 +234,7 @@ export default function Dashboard() {
 
       setTeam(null);
       setSubmission(null);
-      setTeamMsg("You left the team.");
+      setToast("You left the team.");
     } catch (e) {
       setTeamErr(
         e instanceof Error ? e.message : "Could not leave team"
@@ -255,7 +262,7 @@ export default function Dashboard() {
 
       setTeam({ ...team, name: updated.name });
       setRenaming(false);
-      setTeamMsg("Team name updated.");
+      setToast("Team name updated.");
     } catch (e) {
       setTeamErr(
         e instanceof Error ? e.message : "Could not rename team"
@@ -298,7 +305,7 @@ export default function Dashboard() {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      setTeamMsg(`Invite link: ${inviteLink(team.code)}`);
+      setToast(`Invite link: ${inviteLink(team.code)}`);
     }
   };
 
@@ -401,6 +408,17 @@ export default function Dashboard() {
       <div className="pointer-events-none absolute inset-0 z-1 bg-black/25" />
 
       <div className="relative z-10 flex h-dvh flex-col overflow-hidden">
+        {toast && (
+          <div className="pointer-events-none fixed inset-x-0 bottom-5 z-50 flex justify-center px-4">
+            <div className="pointer-events-auto flex max-w-md items-center gap-3 rounded-2xl border border-cyan-300/20 bg-[#071421]/85 px-4 py-3 shadow-[0_18px_45px_rgba(4,13,25,0.72),0_0_25px_rgba(56,217,255,0.18)] backdrop-blur-xl">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(56,217,255,0.9)]" />
+              <p className="text-[11px] font-medium tracking-[0.04em] text-cyan-50/90">
+                {toast}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* ───────────────── HEADER ───────────────── */}
         <header className="h-15.5 shrink-0 border-b border-white/10 bg-[#050b18]/78 backdrop-blur-2xl">
           <div className="mx-auto flex h-full max-w-385 items-center justify-between px-5 lg:px-8">
@@ -629,12 +647,6 @@ export default function Dashboard() {
                     </div>
 
                     <div className="min-h-0 flex-1 p-4">
-                      {teamMsg && (
-                        <div className="mb-2 rounded-lg border border-emerald-300/15 bg-emerald-300/5.5 px-3 py-2 text-[10px] text-emerald-200">
-                          {teamMsg}
-                        </div>
-                      )}
-
                       {teamErr && (
                         <div className="mb-2 rounded-lg border border-red-300/15 bg-red-300/5.5 px-3 py-2 text-[10px] text-red-200">
                           {teamErr}
@@ -956,7 +968,7 @@ export default function Dashboard() {
                     />
                   </div>
 
-                  <div className="min-h-0 flex-1 overflow-hidden p-2.5">
+                  <div className="relative min-h-0 flex-1 overflow-hidden p-2.5">
                     {announcements.length === 0 ? (
                       <div className="flex h-full items-center justify-center text-center">
                         <p className="text-[10px] text-white/25">
@@ -964,43 +976,45 @@ export default function Dashboard() {
                         </p>
                       </div>
                     ) : (
-                      <div className="flex h-full flex-col gap-1 overflow-hidden">
-                        {announcements.slice(0, 5).map((a, i) => (
-                          <article
-                            key={a.id}
-                            className={`min-h-0 flex-1 rounded-xl border border-white/6.5 bg-white/2.5 px-3 py-2.5 ${i === 0
-                                ? "border-cyan-300/10 bg-cyan-300/2.5"
-                                : ""
-                              }`}
-                          >
-                            <div className="flex items-center gap-1.5">
-                              <span
-                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${a.priority === "urgent"
-                                    ? "bg-cyan-300 shadow-[0_0_10px_rgba(56,217,255,0.8)]"
-                                    : "bg-white/20"
-                                  }`}
-                              />
-                              <p className="truncate text-[11px] font-semibold text-white/75">
-                                {a.title}
+                      <div className="ml-1 h-full overflow-y-auto overscroll-contain pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="flex w-full flex-col items-center gap-2">
+                          {announcements.slice(0, 5).map((a, i) => (
+                            <article
+                              key={a.id}
+                              className={`min-h-32 w-full rounded-xl border border-white/6.5 bg-white/2.5 px-3 py-2.5 ${i === 0
+                                  ? "border-cyan-300/10 bg-cyan-300/2.5"
+                                  : ""
+                                }`}
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  className={`h-1.5 w-1.5 shrink-0 rounded-full ${a.priority === "urgent"
+                                      ? "bg-cyan-300 shadow-[0_0_10px_rgba(56,217,255,0.8)]"
+                                      : "bg-white/20"
+                                    }`}
+                                />
+                                <p className="truncate text-[16px] font-semibold text-white/75">
+                                  {a.title}
+                                </p>
+
+                                {a.priority !== "normal" && (
+                                  <span className="ml-auto shrink-0 rounded-full border border-cyan-300/15 bg-cyan-300/6 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-cyan-200">
+                                    {a.priority}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="mt-1 line-clamp-2 text-[14px] leading-relaxed text-white/34">
+                                {a.content}
                               </p>
 
-                              {a.priority !== "normal" && (
-                                <span className="ml-auto shrink-0 rounded-full border border-cyan-300/15 bg-cyan-300/6 px-1.5 py-0.5 text-[6px] font-black uppercase tracking-wider text-cyan-200">
-                                  {a.priority}
-                                </span>
-                              )}
-                            </div>
-
-                            <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-white/34">
-                              {a.content}
-                            </p>
-
-                            <p className="mt-1 flex items-center gap-1 text-[7px] text-white/20">
-                              <Clock3 size={8} />
-                              {fmtDate(a.created_at)}
-                            </p>
-                          </article>
-                        ))}
+                              <p className="mt-1 flex items-center gap-1 text-[10px] text-white/20">
+                                <Clock3 size={8} />
+                                {fmtDate(a.created_at)}
+                              </p>
+                            </article>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1028,41 +1042,50 @@ export default function Dashboard() {
                           </p>
                         </div>
                       ) : (
-                        <ol className="flex h-full flex-col justify-between">
-                          {timeline.slice(0, 7).map((t) => (
-                            <li
-                              key={t.id}
-                              className="flex min-h-0 items-center gap-2.5"
-                            >
-                              <div className="flex w-3 shrink-0 justify-center">
-                                <span
-                                  className={`h-1.5 w-1.5 rotate-45 ${t.is_current
-                                      ? "bg-cyan-300 shadow-[0_0_11px_rgba(56,217,255,0.8)]"
-                                      : t.is_completed
-                                        ? "bg-cyan-300/35"
-                                        : "border border-white/25"
-                                    }`}
-                                />
-                              </div>
+                        <div className="h-full overflow-y-auto overscroll-contain pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                          <ol className="flex min-h-full flex-col items-stretch gap-6 pt-0.5">
+                            {timeline.slice(0, 7).map((t) => {
+                              const isPast = !!t.event_time && new Date(t.event_time).getTime() < Date.now();
+                              const isActive = t.is_current || (!t.is_completed && !isPast);
 
-                              <div className="min-w-0">
-                                <p
-                                  className={`truncate text-[9px] font-semibold ${t.is_current
-                                      ? "text-cyan-200"
-                                      : "text-white/58"
-                                    }`}
+                              return (
+                                <li
+                                  key={t.id}
+                                  className="flex min-h-0 items-center gap-2.5"
                                 >
-                                  {t.title}
-                                </p>
-                                {t.event_time && (
-                                  <p className="truncate text-[7px] text-white/22">
-                                    {fmtDate(t.event_time)}
-                                  </p>
-                                )}
-                              </div>
-                            </li>
-                          ))}
-                        </ol>
+                                  <div className="flex w-3 shrink-0 justify-center">
+                                    <span
+                                      className={`h-1.5 w-1.5 rotate-45 ${isPast
+                                          ? "bg-white/20"
+                                          : isActive
+                                            ? "bg-cyan-300 shadow-[0_0_11px_rgba(56,217,255,0.8)]"
+                                            : "border border-white/25"
+                                        }`}
+                                    />
+                                  </div>
+
+                                  <div className="min-w-0">
+                                    <p
+                                      className={`truncate text-[16px] font-semibold ${isPast
+                                          ? "text-white/35"
+                                          : isActive
+                                            ? "white"
+                                            : "text-white/30"
+                                        }`}
+                                    >
+                                      {t.title}
+                                    </p>
+                                    {t.event_time && (
+                                      <p className={`truncate text-[10px] ${isPast ? "text-white/18" : "text-white/22"}`}>
+                                        {fmtDate(t.event_time)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </li>
+                              );
+                            })}
+                          </ol>
+                        </div>
                       )}
                     </div>
 
