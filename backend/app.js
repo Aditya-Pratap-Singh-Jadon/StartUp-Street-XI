@@ -22,6 +22,10 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Startup Street XI API is running' });
+});
+
 app.use('/api/admins', adminsRoutes);
 app.use('/api/announcements', announcementsRoutes);
 app.use('/api/auth', authRoutes);
