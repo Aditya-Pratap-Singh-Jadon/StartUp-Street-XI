@@ -42,7 +42,7 @@ export default function Countdown() {
 
   if (live) {
     return (
-      <div className="relative flex items-center gap-2.5 overflow-hidden rounded-full border border-cyan-300/20 bg-cyan-300/[0.08] px-4 py-2.5 shadow-[0_0_30px_rgba(56,217,255,0.08)] backdrop-blur-xl">
+      <div className="relative flex items-center gap-2.5 overflow-hidden rounded-full border border-cyan-300/20 bg-cyan-300/8 px-4 py-2.5 shadow-[0_0_30px_rgba(56,217,255,0.08)] backdrop-blur-xl">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-300 opacity-50" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(56,217,255,0.9)]" />
@@ -61,7 +61,7 @@ export default function Countdown() {
 
   if (done) {
     return (
-      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-4 py-2.5 backdrop-blur-xl">
+      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/4.5 px-4 py-2.5 backdrop-blur-xl">
         <span className="h-1.5 w-1.5 rounded-full bg-white/30" />
 
         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/55">
@@ -91,7 +91,7 @@ export default function Countdown() {
       {cells.map((cell, index) => (
         <div
           key={cell.label}
-          className="group relative flex min-w-[55px] flex-col items-center justify-center overflow-hidden rounded-[12px] border border-white/[0.10] bg-[#0a1427]/75 px-2.5 py-2 backdrop-blur-xl transition duration-300 hover:border-cyan-300/25 hover:bg-cyan-300/[0.055] sm:min-w-[64px] sm:px-3 sm:py-2.5"
+          className="group relative flex min-w-13.75 flex-col items-center justify-center overflow-hidden rounded-[12px] border border-white/10 bg-[#0a1427]/75 px-2.5 py-2 backdrop-blur-xl transition duration-300 hover:border-cyan-300/25 hover:bg-cyan-300/5.5 sm:min-w-16 sm:px-3 sm:py-2.5"
         >
           {/* subtle top light */}
           <div

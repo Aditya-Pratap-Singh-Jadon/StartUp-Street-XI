@@ -78,20 +78,20 @@ export default function NotificationBell({ userId }) {
       <>
         {/* BACKDROP */}
         <div
-          className="fixed inset-0 z-[9998] bg-black/10"
+          className="fixed inset-0 z-9998 bg-black/10"
           onClick={() => setOpen(false)}
         />
 
         {/* PANEL */}
         <div
-          className="fixed right-4 top-[73px] z-[9999] w-[min(92vw,390px)] overflow-hidden rounded-[16px] border border-white/[0.13] bg-[#071022]/[0.98] shadow-[0_30px_100px_rgba(0,0,0,0.65)] backdrop-blur-2xl sm:right-5 lg:right-8"
+          className="fixed right-4 top-18.25 z-9999 w-[min(92vw,390px)] overflow-hidden rounded-[16px] border border-white/13 bg-[#071022]/98 shadow-[0_30px_100px_rgba(0,0,0,0.65)] backdrop-blur-2xl sm:right-5 lg:right-8"
           onClick={(e) => e.stopPropagation()}
         >
           {/* atmospheric glow */}
           <div className="pointer-events-none absolute -right-20 -top-24 h-48 w-48 rounded-full bg-cyan-300/[0.07] blur-3xl" />
 
           {/* HEADER */}
-          <div className="relative flex items-center justify-between border-b border-white/[0.08] px-4 py-3.5">
+          <div className="relative flex items-center justify-between border-b border-white/8 px-4 py-3.5">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-cyan-300/15 bg-cyan-300/[0.07] text-cyan-200">
                 <Bell size={13} />
@@ -127,7 +127,7 @@ export default function NotificationBell({ userId }) {
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Close notifications"
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 transition hover:bg-white/[0.05] hover:text-white/70"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-white/25 transition hover:bg-white/5 hover:text-white/70"
               >
                 <X size={14} />
               </button>
@@ -138,7 +138,7 @@ export default function NotificationBell({ userId }) {
           <div className="max-h-[min(65vh,430px)] overflow-y-auto [scrollbar-width:thin]">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center px-6 py-12 text-center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.03] text-white/25">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/8 bg-white/3 text-white/25">
                   <Bell size={17} />
                 </div>
 
@@ -155,11 +155,11 @@ export default function NotificationBell({ userId }) {
                 <button
                   key={n.id}
                   onClick={() => markOne(n.id)}
-                  className={`group relative block w-full border-b border-white/[0.055] px-4 py-3.5 text-left transition last:border-b-0 hover:bg-white/[0.035] ${n.read ? "opacity-55" : ""
+                  className={`group relative block w-full border-b border-white/5.5 px-4 py-3.5 text-left transition last:border-b-0 hover:bg-white/[0.035] ${n.read ? "opacity-55" : ""
                     }`}
                 >
                   {!n.read && (
-                    <span className="absolute bottom-0 left-0 top-0 w-[2px] bg-cyan-300 shadow-[0_0_12px_rgba(56,217,255,0.4)]" />
+                    <span className="absolute bottom-0 left-0 top-0 w-0.5 bg-cyan-300 shadow-[0_0_12px_rgba(56,217,255,0.4)]" />
                   )}
 
                   <div className="flex gap-3">
@@ -220,7 +220,7 @@ export default function NotificationBell({ userId }) {
 
           {/* FOOTER */}
           {items.length > 0 && (
-            <div className="border-t border-white/[0.08] px-4 py-2">
+            <div className="border-t border-white/8 px-4 py-2">
               <p className="text-center text-[7px] font-bold uppercase tracking-[0.2em] text-white/18">
                 StartupStreet XI · Participant Console
               </p>
@@ -239,8 +239,8 @@ export default function NotificationBell({ userId }) {
         aria-label={`Notifications${unread ? `, ${unread} unread` : ""
           }`}
         className={`group relative flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300 ${open
-            ? "border-cyan-300/30 bg-cyan-300/[0.08] text-cyan-200"
-            : "border-white/[0.10] bg-white/[0.025] text-white/45 hover:border-cyan-300/25 hover:bg-cyan-300/[0.05] hover:text-cyan-200"
+            ? "border-cyan-300/30 bg-cyan-300/8 text-cyan-200"
+            : "border-white/10 bg-white/2.5 text-white/45 hover:border-cyan-300/25 hover:bg-cyan-300/5 hover:text-cyan-200"
           }`}
       >
         <Bell
@@ -256,7 +256,7 @@ export default function NotificationBell({ userId }) {
           <>
             <span className="absolute right-1 top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-cyan-300 shadow-[0_0_9px_rgba(56,217,255,0.9)]" />
 
-            <span className="absolute -right-1.5 -top-1.5 flex h-[17px] min-w-[17px] items-center justify-center rounded-full border border-[#071022] bg-cyan-300 px-1 text-[7px] font-black text-[#04101c] shadow-[0_0_14px_rgba(56,217,255,0.25)]">
+            <span className="absolute -right-1.5 -top-1.5 flex h-4.25 min-w-4.25 items-center justify-center rounded-full border border-[#071022] bg-cyan-300 px-1 text-[7px] font-black text-[#04101c] shadow-[0_0_14px_rgba(56,217,255,0.25)]">
               {unread > 9 ? "9+" : unread}
             </span>
           </>

@@ -370,8 +370,8 @@ export default function Dashboard() {
   const IconBox = ({ children, violet = false }) => (
     <span
       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border ${violet
-          ? "border-violet-300/15 bg-violet-300/[0.09] text-violet-200"
-          : "border-cyan-300/15 bg-cyan-300/[0.09] text-cyan-200"
+          ? "border-violet-300/15 bg-violet-300/9 text-violet-200"
+          : "border-cyan-300/15 bg-cyan-300/9 text-cyan-200"
         }`}
     >
       {children}
@@ -393,17 +393,17 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden bg-[#040813] text-white isolate">
+    <div className="relative h-dvh w-full overflow-hidden bg-[#040813] text-white isolate">
       <Background />
 
       {/* Atmospheric lighting over the city background */}
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-[radial-gradient(circle_at_12%_8%,rgba(91,140,255,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,217,255,0.09),transparent_25%),radial-gradient(circle_at_78%_90%,rgba(139,92,246,0.16),transparent_32%)]" />
-      <div className="pointer-events-none absolute inset-0 z-[1] bg-black/25" />
+      <div className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(circle_at_12%_8%,rgba(91,140,255,0.18),transparent_28%),radial-gradient(circle_at_88%_18%,rgba(56,217,255,0.09),transparent_25%),radial-gradient(circle_at_78%_90%,rgba(139,92,246,0.16),transparent_32%)]" />
+      <div className="pointer-events-none absolute inset-0 z-1 bg-black/25" />
 
-      <div className="relative z-10 flex h-[100dvh] flex-col overflow-hidden">
+      <div className="relative z-10 flex h-dvh flex-col overflow-hidden">
         {/* ───────────────── HEADER ───────────────── */}
-        <header className="h-[62px] shrink-0 border-b border-white/[0.10] bg-[#050b18]/78 backdrop-blur-2xl">
-          <div className="mx-auto flex h-full max-w-[1540px] items-center justify-between px-5 lg:px-8">
+        <header className="h-15.5 shrink-0 border-b border-white/10 bg-[#050b18]/78 backdrop-blur-2xl">
+          <div className="mx-auto flex h-full max-w-385 items-center justify-between px-5 lg:px-8">
             <Link
               to="/"
               className="group flex items-center leading-none"
@@ -426,7 +426,7 @@ export default function Dashboard() {
 
               <Link
                 to="/"
-                className="hidden h-8 items-center rounded-lg px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white/45 transition hover:bg-white/[0.05] hover:text-white sm:flex"
+                className="hidden h-8 items-center rounded-lg px-3 text-[9px] font-bold uppercase tracking-[0.18em] text-white/45 transition hover:bg-white/5 hover:text-white sm:flex"
               >
                 Home
               </Link>
@@ -572,7 +572,7 @@ export default function Dashboard() {
           ) : (
             <div className="flex min-h-0 flex-1 flex-col">
               {/* ───────────── HERO ROW ───────────── */}
-              <div className="flex h-[78px] shrink-0 items-center justify-between gap-5">
+              <div className="flex h-19.5 shrink-0 items-center justify-between gap-5">
                 <div className="min-w-0">
 
                   <h1 className="font-display mt-1 truncate text-[30px] font-semibold leading-none tracking-[-0.055em] sm:text-[36px]">
@@ -606,7 +606,7 @@ export default function Dashboard() {
                     className={`${panel} flex min-h-0 flex-col overflow-hidden`}
                     aria-label="Your team"
                   >
-                    <div className="flex shrink-0 items-center justify-between border-b border-white/[0.08] px-4 py-3">
+                    <div className="flex shrink-0 items-center justify-between border-b border-white/8 px-4 py-3">
                       <SectionHead
                         icon={<Users size={14} />}
                         title="Your team"
@@ -614,7 +614,7 @@ export default function Dashboard() {
                           team && (
                             <button
                               onClick={copyInvite}
-                              className="flex items-center gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/[0.055] px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/[0.09]"
+                              className="flex items-center gap-2 rounded-lg border border-cyan-300/15 bg-cyan-300/5.5 px-2.5 py-1.5 font-mono text-[10px] font-bold tracking-[0.12em] text-cyan-100 transition hover:border-cyan-300/30 hover:bg-cyan-300/9"
                             >
                               {copied ? (
                                 <Check size={11} />
@@ -630,13 +630,13 @@ export default function Dashboard() {
 
                     <div className="min-h-0 flex-1 p-4">
                       {teamMsg && (
-                        <div className="mb-2 rounded-lg border border-emerald-300/15 bg-emerald-300/[0.055] px-3 py-2 text-[10px] text-emerald-200">
+                        <div className="mb-2 rounded-lg border border-emerald-300/15 bg-emerald-300/5.5 px-3 py-2 text-[10px] text-emerald-200">
                           {teamMsg}
                         </div>
                       )}
 
                       {teamErr && (
-                        <div className="mb-2 rounded-lg border border-red-300/15 bg-red-300/[0.055] px-3 py-2 text-[10px] text-red-200">
+                        <div className="mb-2 rounded-lg border border-red-300/15 bg-red-300/5.5 px-3 py-2 text-[10px] text-red-200">
                           {teamErr}
                         </div>
                       )}
@@ -721,7 +721,7 @@ export default function Dashboard() {
                               />
                               <button
                                 disabled={busy}
-                                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.13] bg-white/[0.025] px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-violet-300/35 hover:bg-violet-300/[0.06] hover:text-violet-100 disabled:opacity-50"
+                                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-white/13 bg-white/2.5 px-4 py-2.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/70 transition hover:border-violet-300/35 hover:bg-violet-300/6 hover:text-violet-100 disabled:opacity-50"
                               >
                                 Join team
                                 <ArrowUpRight size={12} />
@@ -736,7 +736,7 @@ export default function Dashboard() {
                               {renaming ? (
                                 <div className="flex gap-2">
                                   <input
-                                    className={`${inputCls} !h-9`}
+                                    className={`${inputCls} h-9!`}
                                     value={renameVal}
                                     onChange={(e) =>
                                       setRenameVal(e.target.value)
@@ -787,7 +787,7 @@ export default function Dashboard() {
                               </p>
                             </div>
 
-                            <p className="shrink-0 rounded-full border border-white/[0.08] px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.15em] text-white/32">
+                            <p className="shrink-0 rounded-full border border-white/8 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.15em] text-white/32">
                               Min {teamMin} / Max {teamMax}
                             </p>
                           </div>
@@ -813,13 +813,13 @@ export default function Dashboard() {
                                 return (
                                   <li
                                     key={m.user_id}
-                                    className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-white/[0.075] bg-white/[0.035] px-2.5 py-2"
+                                    className="flex min-w-0 items-center justify-between gap-2 rounded-xl border border-white/7.5 bg-white/3.5 px-2.5 py-2"
                                   >
                                     <div className="flex min-w-0 items-center gap-2.5">
                                       <span
                                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] font-display text-[10px] font-bold ${isLead
-                                            ? "border border-cyan-300/25 bg-cyan-300/[0.09] text-cyan-100"
-                                            : "bg-white/[0.065] text-white/70"
+                                            ? "border border-cyan-300/25 bg-cyan-300/9 text-cyan-100"
+                                            : "bg-white/6.5 text-white/70"
                                           }`}
                                       >
                                         {(m.profile?.name || "?")
@@ -843,7 +843,7 @@ export default function Dashboard() {
 
                                     <div className="flex shrink-0 items-center gap-1">
                                       {isLead && (
-                                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-cyan-300/[0.08] text-cyan-200">
+                                        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-cyan-300/8 text-cyan-200">
                                           <Crown size={10} />
                                         </span>
                                       )}
@@ -943,7 +943,7 @@ export default function Dashboard() {
                   className={`${panel} flex min-h-0 flex-col overflow-hidden`}
                   aria-label="Announcements"
                 >
-                  <div className="border-b border-white/[0.08] px-4 py-3">
+                  <div className="border-b border-white/8 px-4 py-3">
                     <SectionHead
                       icon={<Megaphone size={14} />}
                       title="Announcements"
@@ -968,8 +968,8 @@ export default function Dashboard() {
                         {announcements.slice(0, 5).map((a, i) => (
                           <article
                             key={a.id}
-                            className={`min-h-0 flex-1 rounded-xl border border-white/[0.065] bg-white/[0.025] px-3 py-2.5 ${i === 0
-                                ? "border-cyan-300/10 bg-cyan-300/[0.025]"
+                            className={`min-h-0 flex-1 rounded-xl border border-white/6.5 bg-white/2.5 px-3 py-2.5 ${i === 0
+                                ? "border-cyan-300/10 bg-cyan-300/2.5"
                                 : ""
                               }`}
                           >
@@ -985,7 +985,7 @@ export default function Dashboard() {
                               </p>
 
                               {a.priority !== "normal" && (
-                                <span className="ml-auto shrink-0 rounded-full border border-cyan-300/15 bg-cyan-300/[0.06] px-1.5 py-0.5 text-[6px] font-black uppercase tracking-wider text-cyan-200">
+                                <span className="ml-auto shrink-0 rounded-full border border-cyan-300/15 bg-cyan-300/6 px-1.5 py-0.5 text-[6px] font-black uppercase tracking-wider text-cyan-200">
                                   {a.priority}
                                 </span>
                               )}
@@ -1012,7 +1012,7 @@ export default function Dashboard() {
                     className={`${panel} flex min-h-0 flex-col overflow-hidden`}
                     aria-label="Live timeline"
                   >
-                    <div className="border-b border-white/[0.08] px-4 py-3">
+                    <div className="border-b border-white/8 px-4 py-3">
                       <SectionHead
                         icon={<CalendarClock size={14} />}
                         title="Live timeline"
@@ -1068,7 +1068,7 @@ export default function Dashboard() {
 
                     <Link
                       to="/#timeline"
-                      className="flex shrink-0 items-center justify-between border-t border-white/[0.08] px-4 py-2.5 text-[8px] font-black uppercase tracking-[0.18em] text-cyan-200/60 transition hover:bg-cyan-300/[0.035] hover:text-cyan-200"
+                      className="flex shrink-0 items-center justify-between border-t border-white/8 px-4 py-2.5 text-[8px] font-black uppercase tracking-[0.18em] text-cyan-200/60 transition hover:bg-cyan-300/[0.035] hover:text-cyan-200"
                     >
                       Full schedule
                       <ArrowUpRight size={10} />
@@ -1081,7 +1081,7 @@ export default function Dashboard() {
                     aria-label="Account"
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border border-white/[0.08] bg-white/[0.045] text-white/45">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] border border-white/8 bg-white/4.5 text-white/45">
                         <UserRound size={13} />
                       </span>
 
