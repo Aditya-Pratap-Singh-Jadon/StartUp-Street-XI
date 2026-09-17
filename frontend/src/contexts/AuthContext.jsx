@@ -63,8 +63,13 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'login', email, password }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Login failed');
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw new Error(`Server error (${res.status}). Is the backend running?`);
+    }
+    if (!res.ok) throw new Error(data?.error || 'Login failed');
     localStorage.setItem('token', data.token);
     setUser({ id: data.user.id || data.user._id, email: data.user.email, role: data.user.role });
     setProfile(data.user);
@@ -76,8 +81,13 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'register', ...userData }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Registration failed');
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw new Error(`Server error (${res.status}). Is the backend running?`);
+    }
+    if (!res.ok) throw new Error(data?.error || 'Registration failed');
     // OTP sent successfully, no login yet
   };
 
@@ -87,8 +97,13 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'verify-otp', ...userData }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Verification failed');
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw new Error(`Server error (${res.status}). Is the backend running?`);
+    }
+    if (!res.ok) throw new Error(data?.error || 'Verification failed');
     localStorage.setItem('token', data.token);
     setUser({ id: data.user.id || data.user._id, email: data.user.email, role: data.user.role });
     setProfile(data.user);
@@ -100,8 +115,13 @@ export function AuthProvider({ children }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'google', credential, participant_type }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Google login failed');
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      throw new Error(`Server error (${res.status}). Is the backend running?`);
+    }
+    if (!res.ok) throw new Error(data?.error || 'Google login failed');
     localStorage.setItem('token', data.token);
     setUser({ id: data.user.id || data.user._id, email: data.user.email, role: data.user.role });
     setProfile(data.user);
