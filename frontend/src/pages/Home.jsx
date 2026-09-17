@@ -6,26 +6,26 @@ import { useAuth } from "../contexts/AuthContext";
 const timeline = [
     {
         id: 1,
-        number: "4 P.M.",
+        number: "3:45 P.M.",
         title: "FINAL RESULT ANNOUNCEMENT",
         text: "The final results are announced and the journey concludes with impact.",
     },
     {
         id: 2,
-        number: "2:30 P.M.",
+        number: "2:00 P.M.",
         title: "REVIEW BY SPEAKER",
         text: "Final expert review to challenge assumptions and improve the final pitch.",
     },
     {
         id: 3,
-        number: "1:15 P.M. - 2:30 P.M.",
-        title: "LUNCH & BUFFER TIME",
+        number: "1:15 P.M. - 2:00 P.M.",
+        title: "LUNCH BREAK",
         text: "A buffer window to recharge, recover, and absorb the latest feedback.",
     },
     {
         id: 4,
         number: "1 P.M.",
-        title: "REVIEW 2 RESULT ANNOUNCEMENT",
+        title: "ELIMINATION RESULTS",
         text: "The first result reveal sets the momentum for the final stretch.",
     },
     {
@@ -36,74 +36,62 @@ const timeline = [
     },
     {
         id: 6,
-        number: "10:30 A.M.",
+        number: "9:00 A.M.",
         title: "REVIEW 2",
         text: "A second checkpoint with stronger feedback and sharper validation.",
     },
     {
         id: 7,
-        number: "9:30 A.M.",
-        title: "IDEATION TIME",
-        text: "Focused team work on final product, message, and pitch direction.",
-    },
-    {
-        id: 8,
-        number: "8 A.M.",
-        title: "R&R",
-        text: "Recovery time to stay fresh and focused for the next sprint.",
+        number: "8 A.M. - 9 A.M.",
+        title: "FINAL IDEATION PHASE",
+        text: "A focused round of iteration to sharpen the concept and value proposition.",
     },
     {
         id: 9,
-        number: "6 A.M.",
+        number: "6 A.M. - 8 A.M.",
         title: "BREAK",
         text: "A pause to reset, breathe, and regroup before the final push.",
     },
     {
-        id: 10,
-        number: "4:15 A.M.",
-        title: "SEED PPT",
-        text: "Present the early vision, traction, and the seed of the startup story.",
-    },
-    {
         id: 11,
-        number: "4 A.M.",
-        title: "CRISIS DROP",
-        text: "A challenge moment that pushes teams to adapt and improve under pressure.",
+        number: "4 A.M. - 6 A.M.",
+        title: "IDEATION PHASE III",
+        text: "Teams refine their ideas, validate assumptions, and prepare for the final presentation.",
     },
     {
-        id: 12,
+        id: 10,
         number: "2:30 A.M.",
         title: "REVIEW 1",
-        text: "Early feedback and refinement before the next phase begins.",
+        text: "Initial feedback and refinement before the next phase begins.",
     },
     {
         id: 13,
         number: "1:30 A.M. - 2:30 A.M.",
-        title: "IDEATION",
+        title: "IDEATION PHASE II",
         text: "A focused round of iteration to sharpen the concept and value proposition.",
     },
     {
         id: 14,
         number: "12:30 A.M",
-        title: "BMC PPT",
+        title: "BISNESS MODEL CANVAS",
         text: "Present the business model canvas and frame the venture clearly.",
     },
     {
         id: 15,
         number: "11 P.M. - 12:30 A.M.",
-        title: "IDEATION",
+        title: "IDEATION PHASE I",
         text: "Teams shape the problem, explore the space, and define the core idea.",
     },
     {
         id: 16,
-        number: "9 P.M. - 11 P.M.",
+        number: "8:30 P.M. - 11 P.M.",
         title: "WORKSHOP",
         text: "Hands-on learning, guided sessions, and practical problem solving.",
     },
     {
         id: 17,
-        number: "7:45 P.M. - 9 P.M.",
-        title: "DINNER",
+        number: "7:45 P.M.",
+        title: "DINNER BREAK",
         text: "A break to recharge, reset, and connect with the team.",
     },
     {
@@ -112,11 +100,26 @@ const timeline = [
         title: "OPENING CEREMONY",
         text: "Startup Street XI officially begins and the city opens for building.",
     },
+    {
+        id: 19,
+        number: "5 P.M.",
+        title: "TEAM REGISTRATION",
+        text: "Teams register, form groups, and prepare for the journey ahead.",
+    },
 ];
 
 export default function Home() {
     const { user } = useAuth();
     const [accessMode, setAccessMode] = useState("register");
+    const [expandedTracks, setExpandedTracks] = useState([]);
+
+    const toggleTrack = (title) => {
+        setExpandedTracks((current) =>
+            current.includes(title)
+                ? current.filter((trackTitle) => trackTitle !== title)
+                : [...current, title]
+        );
+    };
 
     useEffect(() => {
         // Use a timeout to ensure layout has settled before scrolling to bottom
@@ -347,26 +350,31 @@ export default function Home() {
                         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
                             {[
                                 {
+                                    id: 1,
                                     title: "Product & Innovation",
                                     focus: "Problem, idea, product, differentiation",
                                     question: "What are we building, and why?"
                                 },
                                 {
+                                    id: 2,
                                     title: "Technology & Development",
                                     focus: "Technology, prototype, feasibility, development",
                                     question: "How does it work?"
                                 },
                                 {
+                                    id: 3,
                                     title: "Marketing & Growth",
                                     focus: "Customers, branding, acquisition, competition",
                                     question: "Who will buy it, and how do we reach them?"
                                 },
                                 {
+                                    id: 4,
                                     title: "Finance & Business Model",
                                     focus: "Pricing, revenue, costs, margins, funding",
                                     question: "How does it make money?"
                                 },
                                 {
+                                    id: 5,
                                     title: "Operations & Strategy",
                                     focus: "Execution, supply chain, partnerships, scaling",
                                     question: "How do we make it work in the real world?"
@@ -377,7 +385,7 @@ export default function Home() {
                                     className="rounded-[1.5rem] border border-cyan-200/20 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.12),_transparent_60%)] p-5 backdrop-blur-xl shadow-[0_0_30px_rgba(34,211,238,0.08)] transition duration-300 hover:-translate-y-1 hover:border-cyan-200/40 md:p-6"
                                 >
                                     <div className="flex h-10 w-10 items-center justify-center rounded-full border border-cyan-200/30 bg-cyan-200/10 text-xs font-semibold tracking-[0.2em] text-cyan-100">
-                                        {role.title.split(" ")[0].slice(0, 2).toUpperCase()}
+                                        {role.id}
                                     </div>
 
                                     <h3 className="mt-5 text-xl font-medium leading-tight tracking-[-0.04em] text-white">
@@ -412,7 +420,10 @@ export default function Home() {
                             </h2>
                         </div>
 
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        <div
+                            className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+                            style={{ gridAutoFlow: "dense" }}
+                        >
                             {[
                                 {
                                     title: "Responsible Production & Consumption",
@@ -449,27 +460,66 @@ export default function Home() {
                                     sdg: "SDG 13",
                                     text: "Build solutions that help communities, businesses and ecosystems adapt to and mitigate climate change."
                                 }
-                            ].map((track) => (
-                                <div
-                                    key={track.title}
-                                    className="group rounded-[1.3rem] border border-white/10 bg-white/[0.03] p-5 backdrop-blur-xl transition duration-300 hover:border-cyan-200/30 hover:bg-white/[0.05] md:p-6"
-                                >
-                                    <div className="flex items-center justify-between gap-4">
-                                        <p className="text-[8px] tracking-[0.28em] text-cyan-200/70">
-                                            {track.sdg}
-                                        </p>
-                                        <div className="h-px flex-1 bg-white/10" />
+                            ].map((track) => {
+                                const isExpanded = expandedTracks.includes(track.title);
+
+                                return (
+                                    <div
+                                        key={track.title}
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => toggleTrack(track.title)}
+                                        onKeyDown={(event) => {
+                                            if (event.key === "Enter" || event.key === " ") {
+                                                event.preventDefault();
+                                                toggleTrack(track.title);
+                                            }
+                                        }}
+                                        style={isExpanded ? { gridRow: "span 2" } : undefined}
+                                        className={`group cursor-pointer rounded-[1.3rem] border p-3 backdrop-blur-xl transition-all duration-300 ease-out hover:-translate-y-1 md:p-6 ${
+                                            isExpanded
+                                                ? "border-cyan-200/40 bg-[radial-gradient(circle_at_top,_rgba(34,211,238,0.18),_transparent_60%)] shadow-[0_0_32px_rgba(34,211,238,0.12)]"
+                                                : "border-white/10 bg-white/[0.03] hover:border-cyan-200/30 hover:bg-white/[0.05]"
+                                        }`}
+                                    >
+                                        <div className="flex items-center justify-between gap-4">
+                                            <p className="text-[8px] tracking-[0.28em] text-cyan-200/70">
+                                                {track.sdg}
+                                            </p>
+                                            <div className="h-px flex-1 bg-white/10" />
+                                            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm text-white/70">
+                                                {isExpanded ? "−" : "+"}
+                                            </span>
+                                        </div>
+
+                                        <h3 className="mt-5 text-xl font-medium leading-tight tracking-[-0.04em] text-white md:text-[1.6rem]">
+                                            {track.title}
+                                        </h3>
+
+                                        <div
+                                            className={`grid overflow-hidden transition-all duration-300 ease-out ${
+                                                isExpanded ? "mt-4 grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                                            }`}
+                                        >
+                                            <div className="overflow-hidden">
+                                                <div className="border-t border-white/10 pt-4">
+                                                    <p className="text-sm leading-6 text-white/75">{track.text}</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(event) => {
+                                                            event.stopPropagation();
+                                                            toggleTrack(track.title);
+                                                        }}
+                                                        className="mt-4 inline-flex items-center rounded-full border border-cyan-200/20 bg-cyan-200/8 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-cyan-100 transition duration-300 hover:border-cyan-200/40 hover:bg-cyan-200/12"
+                                                    >
+                                                        Close
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <h3 className="mt-5 text-xl font-medium leading-tight tracking-[-0.04em] text-white md:text-[1.6rem]">
-                                        {track.title}
-                                    </h3>
-
-                                    <p className="mt-3 text-sm leading-6 text-white/60 md:text-[0.95rem]">
-                                        {track.text}
-                                    </p>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </section>
@@ -608,7 +658,7 @@ export default function Home() {
 
                 <section
                     id="foundation"
-                    className="relative flex min-h-screen items-center border-t border-white/6"
+                    className="relative flex min-h-screen items-center border-t border-white/6 pt-28 pb-0"
                 >
 
                     <div className="mx-auto w-full max-w-7xl px-6 lg:px-10">
@@ -656,10 +706,6 @@ export default function Home() {
                                             ↑
                                         </span>
                                     </Link>
-
-                                    <span className="text-[9px] tracking-[0.3em] text-white/25">
-                                        SCROLL UP TO BUILD THE CITY
-                                    </span>
 
                                 </div>
 
