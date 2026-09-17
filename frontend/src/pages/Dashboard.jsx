@@ -383,7 +383,7 @@ export default function Dashboard() {
       <div className="flex items-center gap-2.5">
         <IconBox violet={violet}>{icon}</IconBox>
         <div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-white/42">
+          <p className="text-[14px] font-bold uppercase tracking-[0.24em] text-white/42">
             {title}
           </p>
         </div>
@@ -482,10 +482,10 @@ export default function Dashboard() {
                   <p className="mt-5 text-[9px] font-bold uppercase tracking-[0.24em] text-cyan-300">
                     Registration
                   </p>
-                  <h1 className="font-display mt-1.5 text-[31px] font-semibold tracking-[-0.045em]">
+                  <h1 className="font-display mt-1.5 text-[38px] font-semibold tracking-[-0.045em]">
                     Complete your profile
                   </h1>
-                  <p className="mt-2 text-xs leading-relaxed text-white/48">
+                  <p className="mt-2 text-sm leading-relaxed text-white/48">
                     A few details are required to complete your event
                     registration.
                   </p>
@@ -575,11 +575,11 @@ export default function Dashboard() {
               <div className="flex h-19.5 shrink-0 items-center justify-between gap-5">
                 <div className="min-w-0">
 
-                  <h1 className="font-display mt-1 truncate text-[30px] font-semibold leading-none tracking-[-0.055em] sm:text-[36px]">
+                  <h1 className="font-display mt-1 truncate text-[34px] font-semibold leading-none tracking-[-0.055em] sm:text-[40px]">
                     Hello, {profile?.name || "Founder"}.
                   </h1>
 
-                  <p className="mt-1 truncate text-[10px] text-white/38">
+                  <p className="mt-1 truncate text-[11px] text-white/38">
                     {profile?.email}
                     {profile?.reg_no ? `  ·  ${profile.reg_no}` : ""}
                     {"  ·  "}
@@ -651,10 +651,10 @@ export default function Dashboard() {
                               <IconBox>
                                 <Plus size={15} />
                               </IconBox>
-                              <h2 className="font-display mt-4 text-[22px] font-semibold tracking-[-0.045em]">
+                              <h2 className="font-display mt-4 text-[28px] font-semibold tracking-[-0.045em]">
                                 Create a team
                               </h2>
-                              <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-white/42">
+                              <p className="mt-1 max-w-xs text-[12px] leading-relaxed text-white/42">
                                 Start your team and become its leader.
                               </p>
                             </div>
@@ -694,10 +694,10 @@ export default function Dashboard() {
                               <IconBox violet>
                                 <Users size={15} />
                               </IconBox>
-                              <h2 className="font-display mt-4 text-[22px] font-semibold tracking-[-0.045em]">
+                              <h2 className="font-display mt-4 text-[28px] font-semibold tracking-[-0.045em]">
                                 Join a team
                               </h2>
-                              <p className="mt-1 max-w-xs text-[11px] leading-relaxed text-white/42">
+                              <p className="mt-1 max-w-xs text-[12px] leading-relaxed text-white/42">
                                 Use the unique code shared by your leader.
                               </p>
                             </div>
@@ -763,7 +763,7 @@ export default function Dashboard() {
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2">
-                                  <h2 className="font-display truncate text-[27px] font-semibold leading-none tracking-[-0.055em]">
+                                  <h2 className="font-display truncate text-[34px] font-semibold leading-none tracking-[-0.055em]">
                                     {team.name}
                                   </h2>
                                   {isLeader && (
@@ -778,7 +778,7 @@ export default function Dashboard() {
                                 </div>
                               )}
 
-                              <p className="mt-1.5 text-[10px] text-white/38">
+                              <p className="mt-1.5 text-[11px] text-white/38">
                                 {team.members.length}/{teamMax} members
                                 <span className="mx-1.5 text-white/15">
                                   •
@@ -794,7 +794,7 @@ export default function Dashboard() {
 
                           <div className="mt-4 flex min-h-0 flex-1 flex-col">
                             <div className="mb-2 flex shrink-0 items-center justify-between">
-                              <p className="text-[8px] font-bold uppercase tracking-[0.22em] text-white/28">
+                              <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/28">
                                 Team members
                               </p>
                               <button
@@ -892,12 +892,12 @@ export default function Dashboard() {
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <IconBox violet>
-                        <UploadCloud size={14} />
+                        <UploadCloud size={16} />
                       </IconBox>
 
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-[9px] font-bold uppercase tracking-[0.19em] text-white/48">
+                          <p className="text-[14px] font-bold uppercase tracking-[0.19em] text-white/48">
                             Final review
                           </p>
                           {submission ? (
@@ -916,7 +916,7 @@ export default function Dashboard() {
                           )}
                         </div>
 
-                        <p className="mt-0.5 truncate text-[9px] text-white/32">
+                        <p className="mt-0.5 truncate text-[10px] text-white/32">
                           {!team
                             ? "Join or create a team to unlock submissions."
                             : !subsOpen && !submission
@@ -929,10 +929,10 @@ export default function Dashboard() {
                     {team && (subsOpen || submission) && (
                       <Link
                         to="/submissions"
-                        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-[8px] font-black uppercase tracking-[0.16em] text-[#050816] shadow-[0_7px_24px_rgba(255,255,255,0.08)] transition hover:bg-cyan-100"
+                        className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-[#050816] shadow-[0_7px_24px_rgba(255,255,255,0.08)] transition hover:bg-cyan-100"
                       >
                         Open portal
-                        <ArrowUpRight size={11} />
+                        <ArrowUpRight size={14} />
                       </Link>
                     )}
                   </section>
@@ -980,7 +980,7 @@ export default function Dashboard() {
                                     : "bg-white/20"
                                   }`}
                               />
-                              <p className="truncate text-[10px] font-semibold text-white/75">
+                              <p className="truncate text-[11px] font-semibold text-white/75">
                                 {a.title}
                               </p>
 
@@ -991,7 +991,7 @@ export default function Dashboard() {
                               )}
                             </div>
 
-                            <p className="mt-1 line-clamp-2 text-[9px] leading-relaxed text-white/34">
+                            <p className="mt-1 line-clamp-2 text-[10px] leading-relaxed text-white/34">
                               {a.content}
                             </p>
 
@@ -1086,10 +1086,10 @@ export default function Dashboard() {
                       </span>
 
                       <div className="min-w-0">
-                        <p className="truncate text-[10px] font-semibold text-white/70">
+                        <p className="truncate text-[12px] font-semibold text-white/70">
                           {profile?.name}
                         </p>
-                        <p className="truncate text-[8px] text-white/25">
+                        <p className="truncate text-[10px] text-white/25">
                           {profile?.email}
                         </p>
                       </div>
