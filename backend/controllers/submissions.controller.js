@@ -81,6 +81,19 @@ export default async function handler(req, res) {
       return res.status(200).json(updated);
     }
 
+    // SUPERADMIN: Reset submission round
+    if (path === '/state/reset' && req.method === 'POST') {
+      const { admin_id } = req.body || {};
+      if (!(await checkSuperadmin(admin_id))) return res.status(403).json({ error: 'Only Superadmin can control the submission window.' });
+      
+      const updated = await prisma.submissionState.upsert({
+        where: { id: 'global' },
+        update: { currentRound: 0, isOpen: false, startedAt: null, endedAt: null, updatedBy: admin_id },
+        create: { id: 'global', currentRound: 0, isOpen: false, startedAt: null, endedAt: null, updatedBy: admin_id }
+      });
+      return res.status(200).json(updated);
+    }
+
     if (req.method === 'GET' && path === '/my') {
       const { user_id } = req.query;
       if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
@@ -234,10 +247,10 @@ export default async function handler(req, res) {
       let drive_file_id = null;
       try {
         const driveFileName = `[Team ${team_id}] [Round ${round}] ${safeName}`;
-        drive_file_id = await uploadToDrive(buffer, content_type, driveFileName);
+        drive_file_id = await uploadToDrive(buffer, content_type || 'application/octet-stream', driveFileName);
       } catch (err) {
-        console.warn('Drive upload failed, using dummy ID for local testing');
-        drive_file_id = 'dummy_drive_id_123';
+        console.error('Drive upload error:', err.message);
+        return res.status(502).json({ error: 'File upload to storage failed. Please try again. If this persists, contact the event organizer.' });
       }
       
       const row = {

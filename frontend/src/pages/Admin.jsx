@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -113,6 +113,10 @@ export default function Admin() {
   const [submissionWindow, setSubmissionWindow] = useState({ isOpen: false });
   const [windowBusy, setWindowBusy] = useState(false);
   const [selectedSubmissionTeam, setSelectedSubmissionTeam] = useState(null);
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
+  const pdfBlobRef = useRef(null);
 
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({});
@@ -591,9 +595,14 @@ export default function Admin() {
     );
   });
 
+  // Deduplicate subs by id defensively before computing rows
+  const dedupedSubs = Array.from(
+    subs.reduce((m, s) => { if (!m.has(s.id)) m.set(s.id, s); return m; }, new Map()).values()
+  );
+
   const filteredSubs = teams
     .flatMap((t) => {
-      const teamSubs = subs.filter((s) => s.team_id === t.id);
+      const teamSubs = dedupedSubs.filter((s) => s.team_id === t.id);
       if (teamSubs.length === 0) {
         return [{ team: t, sub: null }];
       }
@@ -1475,27 +1484,112 @@ export default function Admin() {
                             )}
                           </div>
                           
-                          {((submissionWindow?.currentRound || 0) < 2 || submissionWindow?.isOpen) && (
+                          <div className="flex items-center gap-3">
+                            {/* Round 1 Button */}
+                            {submissionWindow?.currentRound === 0 ? (
+                              <button
+                                disabled={windowBusy}
+                                onClick={async () => {
+                                  setWindowBusy(true);
+                                  try {
+                                    const res = await apiSend('/api/submissions/state/start', 'POST', { admin_id: user.id });
+                                    setSubmissionWindow(res);
+                                    flash('Round 1 started successfully.');
+                                  } catch (e) { fail(e); } finally { setWindowBusy(false); }
+                                }}
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded-lg disabled:opacity-50"
+                              >
+                                Start Round 1
+                              </button>
+                            ) : submissionWindow?.currentRound === 1 && submissionWindow?.isOpen ? (
+                              <button
+                                disabled={windowBusy}
+                                onClick={async () => {
+                                  setWindowBusy(true);
+                                  try {
+                                    const res = await apiSend('/api/submissions/state/end', 'POST', { admin_id: user.id });
+                                    setSubmissionWindow(res);
+                                    flash('Round 1 ended successfully.');
+                                  } catch (e) { fail(e); } finally { setWindowBusy(false); }
+                                }}
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-red-500/20 text-red-300 hover:bg-red-500/30 rounded-lg disabled:opacity-50"
+                              >
+                                End Round 1
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-white/5 text-white/30 rounded-lg"
+                              >
+                                Round 1 Ended
+                              </button>
+                            )}
+
+                            {/* Round 2 Button */}
+                            {(submissionWindow?.currentRound === 1 && !submissionWindow?.isOpen) ? (
+                              <button
+                                disabled={windowBusy}
+                                onClick={async () => {
+                                  setWindowBusy(true);
+                                  try {
+                                    const res = await apiSend('/api/submissions/state/start', 'POST', { admin_id: user.id });
+                                    setSubmissionWindow(res);
+                                    flash('Round 2 started successfully.');
+                                  } catch (e) { fail(e); } finally { setWindowBusy(false); }
+                                }}
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded-lg disabled:opacity-50"
+                              >
+                                Start Round 2
+                              </button>
+                            ) : submissionWindow?.currentRound === 2 && submissionWindow?.isOpen ? (
+                              <button
+                                disabled={windowBusy}
+                                onClick={async () => {
+                                  setWindowBusy(true);
+                                  try {
+                                    const res = await apiSend('/api/submissions/state/end', 'POST', { admin_id: user.id });
+                                    setSubmissionWindow(res);
+                                    flash('Round 2 ended successfully.');
+                                  } catch (e) { fail(e); } finally { setWindowBusy(false); }
+                                }}
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-red-500/20 text-red-300 hover:bg-red-500/30 rounded-lg disabled:opacity-50"
+                              >
+                                End Round 2
+                              </button>
+                            ) : submissionWindow?.currentRound === 2 && !submissionWindow?.isOpen ? (
+                              <button
+                                disabled
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-white/5 text-white/30 rounded-lg"
+                              >
+                                Round 2 Ended
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-white/5 text-white/30 rounded-lg"
+                              >
+                                Start Round 2
+                              </button>
+                            )}
+
+                            {/* Reset Button */}
                             <button
-                              disabled={windowBusy}
+                              disabled={windowBusy || submissionWindow?.currentRound === 0}
                               onClick={async () => {
-                                setWindowBusy(true);
-                                try {
-                                  const action = submissionWindow?.isOpen ? 'end' : 'start';
-                                  const res = await apiSend(`/api/submissions/state/${action}`, 'POST', { admin_id: user.id });
-                                  setSubmissionWindow(res);
-                                  flash(`Submission state updated successfully.`);
-                                } catch (e) {
-                                  fail(e);
-                                } finally {
-                                  setWindowBusy(false);
+                                if (confirm("Are you sure you want to reset the submission state? This will set the round back to 0.")) {
+                                  setWindowBusy(true);
+                                  try {
+                                    const res = await apiSend('/api/submissions/state/reset', 'POST', { admin_id: user.id });
+                                    setSubmissionWindow(res);
+                                    flash('Submission state reset successfully.');
+                                  } catch (e) { fail(e); } finally { setWindowBusy(false); }
                                 }
                               }}
-                              className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition ${submissionWindow?.isOpen ? 'bg-red-500/20 text-red-300 hover:bg-red-500/30' : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30'} rounded-lg disabled:opacity-50`}
+                              className="px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] transition bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 rounded-lg disabled:opacity-50 ml-2"
                             >
-                              {submissionWindow?.isOpen ? `End Round ${submissionWindow?.currentRound}` : `Start Round ${submissionWindow?.currentRound ? submissionWindow.currentRound + 1 : 1}`}
+                              Reset
                             </button>
-                          )}
+                          </div>
                         </div>
                       )}
 
@@ -1538,7 +1632,7 @@ export default function Admin() {
                                   sub,
                                 }) => (
                                   <tr
-                                    key={t.id}
+                                    key={sub ? sub.id : `${t.id}-none`}
                                     className="border-b border-white/[0.05] transition hover:bg-white/[0.018]"
                                   >
                                     <td className="px-4 py-3.5">
@@ -1623,16 +1717,15 @@ export default function Admin() {
                                     <td className="px-4 py-3.5">
                                       {sub && (
                                         <div className="flex gap-1.5">
-                                          <a
-                                            href={
-                                              sub.file_url ? `${sub.file_url}&token=${localStorage.getItem('token')}` : "#"
-                                            }
-                                            target="_blank"
-                                            rel="noreferrer"
+                                          <button
+                                            onClick={() => {
+                                              setSelectedSubmissionTeam({ team: t, submission: sub });
+                                            }}
                                             className="flex h-7 w-7 items-center justify-center rounded-md border border-white/[0.08] text-white/30 hover:border-cyan-300/25 hover:text-cyan-200"
+                                            title="View submission"
                                           >
                                             <Eye size={12} />
-                                          </a>
+                                          </button>
 
                                           <button
                                             onClick={async () => {
@@ -3252,62 +3345,13 @@ export default function Admin() {
         )}
         
       {selectedSubmissionTeam && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020510]/80 p-4 backdrop-blur-md sm:p-6"
-          onClick={() => setSelectedSubmissionTeam(null)}
-        >
-          <div
-            className={`${glass} relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-white/[0.08] p-6`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedSubmissionTeam(null)}
-              className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.03] text-white/40 transition hover:bg-white/10 hover:text-white"
-            >
-              <X size={14} />
-            </button>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">{selectedSubmissionTeam.team?.name || selectedSubmissionTeam.name} - ROUND {selectedSubmissionTeam.submission?.round} SUBMISSION</p>
-            <h3 className="mt-1 font-display text-2xl text-white">SUBMISSION DETAILS</h3>
-            
-            <div className="mt-6 space-y-6">
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Status</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-400">SUBMITTED ✓</p>
-              </div>
-              
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">PPT / PDF</p>
-                <p className="mt-1 text-sm text-white">{selectedSubmissionTeam.submission?.file_name}</p>
-                <a href={selectedSubmissionTeam.submission?.file_url ? `${selectedSubmissionTeam.submission.file_url}&token=${localStorage.getItem('token')}` : "#"} target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
-                  <ExternalLink size={12} /> View PPT
-                </a>
-              </div>
-              
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">GitHub Repository</p>
-                {selectedSubmissionTeam.submission?.github_url ? (
-                  <a href={selectedSubmissionTeam.submission?.github_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
-                    <Github size={12} /> Open Github
-                  </a>
-                ) : <p className="mt-1 text-sm text-white/30">—</p>}
-              </div>
-
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Deployed Website</p>
-                {selectedSubmissionTeam.submission?.deployed_url ? (
-                  <a href={selectedSubmissionTeam.submission?.deployed_url} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
-                    <ExternalLink size={12} /> Open Website
-                  </a>
-                ) : <p className="mt-1 text-sm text-white/30">—</p>}
-              </div>
-              
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">Submitted At</p>
-                <p className="mt-1 text-sm text-white/70">{fmtDate(selectedSubmissionTeam.submission?.created_at)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <SubmissionModal
+          data={selectedSubmissionTeam}
+          onClose={() => {
+            setSelectedSubmissionTeam(null);
+          }}
+          glass={glass}
+        />
       )}
     </div>
   );
@@ -3327,3 +3371,163 @@ function EmptyState({ icon: Icon, text }) {
     </div>
   );
 }
+
+function SubmissionModal({ data, onClose, glass }) {
+  const { team, submission } = data;
+  const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
+
+  // Fetch blob when modal mounts
+  useEffect(() => {
+    let revoked = false;
+    async function loadPdf() {
+      if (!submission?.file_url) return;
+      setPdfLoading(true);
+      setPdfError(null);
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(submission.file_url, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`Server returned ${res.status}${errText ? ': ' + errText.slice(0, 120) : ''}`);
+        }
+        const contentType = res.headers.get('content-type') || '';
+        const blob = await res.blob();
+        if (!revoked) {
+          const url = URL.createObjectURL(blob);
+          setPdfBlobUrl({ url, contentType, size: blob.size });
+        }
+      } catch (err) {
+        if (!revoked) setPdfError(err.message);
+      } finally {
+        if (!revoked) setPdfLoading(false);
+      }
+    }
+    loadPdf();
+    return () => {
+      revoked = true;
+      setPdfBlobUrl(prev => {
+        if (prev?.url) URL.revokeObjectURL(prev.url);
+        return null;
+      });
+    };
+  }, [submission?.file_url]);
+
+  const isPdf = pdfBlobUrl?.contentType?.includes('pdf') ||
+    submission?.file_name?.toLowerCase().endsWith('.pdf');
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#020510]/80 p-4 backdrop-blur-md sm:p-6"
+      onClick={onClose}
+    >
+      <div
+        className={`${glass} relative flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/[0.08]`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 pb-4">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/50">
+              {team?.name} — Round {submission?.round} Submission
+            </p>
+            <h3 className="mt-1 font-display text-xl text-white">Submission Details</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="ml-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/[0.03] text-white/40 transition hover:bg-white/10 hover:text-white"
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Meta */}
+        <div className="grid grid-cols-2 gap-4 px-6 pb-4 sm:grid-cols-4">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Status</p>
+            <p className="mt-1 text-[11px] font-semibold text-emerald-400">SUBMITTED ✓</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Round</p>
+            <p className="mt-1 text-[11px] text-white">Round {submission?.round}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">File</p>
+            <p className="mt-1 text-[11px] text-white truncate">{submission?.file_name || '—'}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-white/30">Submitted</p>
+            <p className="mt-1 text-[11px] text-white/70">{submission?.created_at ? new Date(submission.created_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '—'}</p>
+          </div>
+        </div>
+
+        {/* Links row */}
+        <div className="flex flex-wrap gap-2 px-6 pb-4">
+          {submission?.github_url && (
+            <a href={submission.github_url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+              <Github size={11} /> GitHub
+            </a>
+          )}
+          {submission?.deployed_url && (
+            <a href={submission.deployed_url} target="_blank" rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+              <ExternalLink size={11} /> Live Site
+            </a>
+          )}
+          {pdfBlobUrl?.url && (
+            <a href={pdfBlobUrl.url} download={submission?.file_name || 'submission'}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-cyan-300 hover:bg-white/10">
+              <FileText size={11} /> Download
+            </a>
+          )}
+        </div>
+
+        {/* PDF Viewer area */}
+        <div className="mx-6 mb-6 flex min-h-[300px] flex-1 flex-col rounded-xl border border-white/[0.07] bg-black/20 overflow-hidden">
+          {!submission?.file_url ? (
+            <div className="flex flex-1 items-center justify-center p-8 text-center">
+              <p className="text-[10px] text-white/30">No file attached to this submission.</p>
+            </div>
+          ) : pdfLoading ? (
+            <div className="flex flex-1 items-center justify-center gap-2 p-8">
+              <RefreshCw size={14} className="animate-spin text-white/30" />
+              <p className="text-[10px] text-white/40">Loading submission…</p>
+            </div>
+          ) : pdfError ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+              <p className="text-[10px] font-semibold text-red-400">Unable to load this submission.</p>
+              <p className="text-[9px] text-white/30">{pdfError}</p>
+              <p className="text-[9px] text-white/20">Please try again or contact support.</p>
+            </div>
+          ) : pdfBlobUrl?.url ? (
+            isPdf ? (
+              <iframe
+                src={pdfBlobUrl.url}
+                className="h-[55vh] w-full border-0"
+                title={`${submission?.file_name} — Round ${submission?.round}`}
+              />
+            ) : (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
+                <FileText size={22} className="text-white/20" />
+                <p className="text-[10px] text-white/50">
+                  {submission?.file_name}
+                </p>
+                <p className="text-[9px] text-white/25">
+                  This file type cannot be previewed inline.
+                </p>
+                <a href={pdfBlobUrl.url} download={submission?.file_name}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-white/15">
+                  Download File
+                </a>
+              </div>
+            )
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}

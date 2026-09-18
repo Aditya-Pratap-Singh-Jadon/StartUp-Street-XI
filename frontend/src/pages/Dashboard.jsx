@@ -152,7 +152,6 @@ export default function Dashboard() {
   const doCreate = async (e) => {
     e.preventDefault();
     setTeamErr(null);
-    setTeamMsg(null);
 
     if (createName.trim().length < 2) {
       return setTeamErr("Team name must be at least 2 characters.");
@@ -186,7 +185,6 @@ export default function Dashboard() {
   const doJoin = async (e) => {
     e.preventDefault();
     setTeamErr(null);
-    setTeamMsg(null);
 
     if (!joinCode.trim()) {
       return setTeamErr("Enter a Team Code, e.g. SSXI-X7K4.");

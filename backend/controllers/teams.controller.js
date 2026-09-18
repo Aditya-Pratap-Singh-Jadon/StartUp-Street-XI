@@ -42,7 +42,7 @@ export default async function handler(req, res) {
           const subs = await prisma.submission.findMany({ 
             where: { team_id: t.id },
             orderBy: { round: 'asc' },
-            select: { id: true, round: true, file_name: true, github_url: true, deployed_url: true, created_at: true, status: true } 
+            select: { id: true, round: true, file_name: true, file_url: true, github_url: true, deployed_url: true, created_at: true, status: true } 
           });
           // Backward compatibility for Admin.jsx before Phase 6
           out.push({ ...t, members, member_count: members.length, submission: subs[0] || null, submissions: subs });

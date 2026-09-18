@@ -12,6 +12,16 @@ export async function connectDatabase() {
   try {
     await prisma.$connect();
     console.log('Successfully connected to MongoDB through Prisma.');
+
+    const existing = await prisma.submissionState.findUnique({ where: { id: 'global' } });
+    if (!existing) {
+      await prisma.submissionState.create({
+        data: { id: 'global', currentRound: 0, isOpen: true }
+      });
+      console.log('SubmissionState initialized: { currentRound: 0, isOpen: true }');
+    } else {
+      console.log(`SubmissionState present: Round ${existing.currentRound}, isOpen=${existing.isOpen}`);
+    }
   } catch (err) {
     console.error('Failed to connect to MongoDB:', err.message);
     process.exit(1);

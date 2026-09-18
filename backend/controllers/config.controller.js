@@ -1,5 +1,5 @@
 import { prisma } from '../config/database.js';
-import { checkSuperadmin, broadcast, getConfig } from '../utils/helpers.js';
+import { checkAdmin, checkSuperadmin, broadcast, getConfig } from '../utils/helpers.js';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
