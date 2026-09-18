@@ -910,6 +910,7 @@ export default function Dashboard() {
                           <p className="text-[14px] font-bold uppercase tracking-[0.19em] text-white/48">
                             Final review
                           </p>
+                          {/* 
                           {submission ? (
                             <span className="rounded-full border border-emerald-300/15 bg-emerald-300/[0.07] px-2 py-0.5 text-[7px] font-black uppercase tracking-wider text-emerald-200">
                               Submitted
@@ -924,6 +925,7 @@ export default function Dashboard() {
                               {subsOpen ? "Open" : "Closed"}
                             </span>
                           )}
+                          */}
                         </div>
 
                         <p className="mt-0.5 truncate text-[10px] text-white/32">
